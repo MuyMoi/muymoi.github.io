@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ecuaciones Cuadraticas</title>
+<style>
+
+body {
+	font-family: sans-serif;
+}
+
+pre {
+	font-size: 11pt;
+}
+
+b {
+	color: green;
+}
+</style>
+</head>
+<body>
+
+<h1>Solucionador de ecuaciones cuadraticas</h1>
+
+<form id="coeficientes"> 
+<!-- el formulario es mas que todo para poder ejecutar la
+accion simplemente presionando Enter -->
+
+<h3>Ingresa los coeficientes:</h3>
+<!-- el atributo step="any" me permite introducir decimales-->
+<label>a = <input type="number" name="a" step="any"></label>
+<br>
+<label>b = <input type="number" name="b" step="any"></label>
+<br>
+<label>c = <input type="number" name="c" step="any"></label>
+<br>
+<button>Calcular</button>
+
+</form>
+
+<pre></pre>
+</body>
+
+<script>
+
+btn = document.querySelector('button')
+pr = document.querySelector('pre')
+inputs = document.getElementsByTagName('input')
+formul = document.getElementById('coeficientes')
+
+formul.onsubmit = function(e) {
+	e.preventDefault()
+}
+btn.onclick = function() {
+	let a = Number(inputs['a'].value)
+	if (a == 0 | isNaN(a)) {
+		alert("a debe ser diferente de 0")
+		return false
+	}
+
+	let b = Number(inputs['b'].value)
+	let c = Number(inputs['c'].value)
+
+	if (isNaN(b)) b = 0
+	if (isNaN(c)) c = 0
+
+	pr.innerHTML = `Usted indicó la ecuacion ${a}x² `
+
+	if (b >= 0) pr.innerHTML += `+ ${b}x `
+	else pr.innerHTML += `${b}x `
+
+	if (c >= 0) pr.innerHTML += `+ ${c}x\n\n`
+	else pr.innerHTML += `${c}x\n\n`
+
+
+	pr.innerHTML += "    -b ± √(b² - 4ac)\n"
+	pr.innerHTML += "x = ————————————————\n"
+	pr.innerHTML += "           2a\n\n"
+
+	pr.innerHTML += `    -(${b}) ± √[(${b})² - 4(${a})(${c})]\n`
+	pr.innerHTML += `x = ————————————————————————————————\n`
+	pr.innerHTML += `             2(${a})\n\n`
+
+	let menosb = -b
+	let belev2 = Math.pow(b,2)
+	let ac4 = a*c*4
+	let amult2 = a*2
+
+	pr.innerHTML += `    ${menosb} ± √[(${belev2}) - (${ac4})]\n`
+	pr.innerHTML += `x = ————————————————————————————————\n`
+	pr.innerHTML += `             ${amult2}\n\n`
+
+	let dentroraiz = belev2 - ac4
+
+	pr.innerHTML += `    ${menosb} ± √[${dentroraiz}]\n`
+	pr.innerHTML += `x = —————————————————————————\n`
+	pr.innerHTML += `        ${amult2}\n\n`
+
+	if (dentroraiz < 0) {
+		pr.innerHTML += "<b>La ecuacion no tiene raices reales</b>"
+		return
+	}
+
+	let solucraiz = Math.sqrt(dentroraiz)
+
+
+	pr.innerHTML += `    ${menosb} ± ${solucraiz}\n`
+	pr.innerHTML += `x = ——————————————\n`
+	pr.innerHTML += `       ${amult2}\n\n`
+	pr.innerHTML += "--------------------\n\n"
+
+	// x1
+
+	pr.innerHTML += `     ${menosb} + ${solucraiz}\n`
+	pr.innerHTML += `x1 = —————————————\n`
+	pr.innerHTML += `        ${amult2}\n\n`
+
+	let numerador = menosb + solucraiz
+
+	pr.innerHTML += `     ${numerador}\n`
+	pr.innerHTML += `x1 = —————————————\n`
+	pr.innerHTML += `     ${amult2}\n\n`
+
+	let x1 = numerador / amult2
+
+	pr.innerHTML += `<b> ——————> x1 = ${x1}</b>\n\n`
+
+	pr.innerHTML += "--------------------\n\n"
+
+	// x2
+
+	pr.innerHTML += `     ${menosb} - ${solucraiz}\n`
+	pr.innerHTML += `x2 = —————————————\n`
+	pr.innerHTML += `        ${amult2}\n\n`
+
+	numerador = menosb - solucraiz
+
+	pr.innerHTML += `     ${numerador}\n`
+	pr.innerHTML += `x2 = —————————————\n`
+	pr.innerHTML += `     ${amult2}\n\n`
+
+	let x2 = numerador / amult2
+
+	pr.innerHTML += `<b> ——————> x2 = ${x2}</b>`
+}
+
+</script>
+</html>
