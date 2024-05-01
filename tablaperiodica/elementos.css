@@ -1,0 +1,145 @@
+:root {
+  --p1:31px; --p2:73.6px; --p3:116.3px; --p4:159px; --p5:201.6px; --p6:244.3px; --p7:287px;
+  --lantanidos:335.7px; --actinidos:378.4px;
+  --g4:149px; --g5:191.3px; --g6:234px; --g7:277px; --g8:319.3px; --g9:362px; --g10:405px;
+  --g11:447.6px; --g12:490px; --g13:533px; --g14:575.6px; --g15:618px; --g16:661px;
+  --g17:703.6px; --g18:746px;
+}
+
+#h {left: 21px; top: var(--p1);}
+#li {left: 21px; top: var(--p2);}
+#na {left: 21px; top: var(--p3);}
+#k {left: 21px; top: var(--p4);}
+#rb {left: 21px; top: var(--p5);}
+#cs {left: 21px; top: var(--p6);}
+#fr {left: 21px; top: var(--p7);}
+
+#be {left: 63.6px; top: var(--p2);}
+#mg {left: 63.6px; top: var(--p3);}
+#ca {left: 63.6px; top: var(--p4);}
+#sr {left: 63.6px; top: var(--p5);}
+#ba {left: 63.6px; top: var(--p6);}
+#ra {left: 63.6px; top: var(--p7);}
+
+#sc {left: 106px; top: var(--p4);}
+#y {left: 106px; top: var(--p5);}
+
+#ti {left: 149px; top: var(--p4);}
+#zr {left: 149px; top: var(--p5);}
+#hf {left: 149px; top: var(--p6);}
+#rf {left: 149px; top: var(--p7);}
+
+#v {left: 191.3px; top: var(--p4);}
+#nb {left: 191.3px; top: var(--p5);}
+#ta {left: 191.3px; top: var(--p6);}
+#db {left: 191.3px; top: var(--p7);}
+
+#cr {left: 234px; top: var(--p4);}
+#mo {left: 234px; top: var(--p5);}
+#w {left: 234px; top: var(--p6);}
+#sg {left: 234px; top: var(--p7);}
+
+#mn {left: 277px; top: var(--p4);}
+#tc {left: 277px; top: var(--p5);}
+#re {left: 277px; top: var(--p6);}
+#bh {left: 277px; top: var(--p7);}
+
+#fe {left: 319.3px; top: var(--p4);}
+#ru {left: 319.3px; top: var(--p5);}
+#os {left: 319.3px; top: var(--p6);}
+#hs {left: 319.3px; top: var(--p7);}
+
+#co {left: 362px; top: var(--p4);}
+#rh {left: 362px; top: var(--p5);}
+#ir {left: 362px; top: var(--p6);}
+#mt {left: 362px; top: var(--p7);}
+
+#ni {left: 405px; top: var(--p4);}
+#pd {left: 405px; top: var(--p5);}
+#pt {left: 405px; top: var(--p6);}
+#ds {left: 405px; top: var(--p7);}
+
+#cu {left: 447.6px; top: var(--p4);}
+#ag {left: 447.6px; top: var(--p5);}
+#au {left: 447.6px; top: var(--p6);}
+#rg {left: 447.6px; top: var(--p7);}
+
+#zn {left: 490px; top: var(--p4);}
+#cd {left: 490px; top: var(--p5);}
+#hg {left: 490px; top: var(--p6);}
+#cn {left: 490px; top: var(--p7);}
+
+#b {left: 533px; top: var(--p2);}
+#al {left: 533px; top: var(--p3);}
+#ga {left: 533px; top: var(--p4);}
+#in {left: 533px; top: var(--p5);}
+#tl {left: 533px; top: var(--p6);}
+#nh {left: 533px; top: var(--p7);}
+
+#c {left: 575.6px; top: var(--p2);}
+#si {left: 575.6px; top: var(--p3);}
+#ge {left: 575.6px; top: var(--p4);}
+#sn {left: 575.6px; top: var(--p5);}
+#pb {left: 575.6px; top: var(--p6);}
+#fl {left: 575.6px; top: var(--p7);}
+
+#n {left: 618px; top: var(--p2);}
+#p {left: 618px; top: var(--p3);}
+#as {left: 618px; top: var(--p4);}
+#sb {left: 618px; top: var(--p5);}
+#bi {left: 618px; top: var(--p6);}
+#mc {left: 618px; top: var(--p7);}
+
+#o {left: 661px; top: var(--p2);}
+#s {left: 661px; top: var(--p3);}
+#se {left: 661px; top: var(--p4);}
+#te {left: 661px; top: var(--p5);}
+#po {left: 661px; top: var(--p6);}
+#lv {left: 661px; top: var(--p7);}
+
+#f {left: 703.6px; top: var(--p2);}
+#cl {left: 703.6px; top: var(--p3);}
+#br {left: 703.6px; top: var(--p4);}
+#i {left: 703.6px; top: var(--p5);}
+#at {left: 703.6px; top: var(--p6);}
+#ts {left: 703.6px; top: var(--p7);}
+
+#he {left: 746px; top: var(--p1);}
+#ne {left: 746px; top: var(--p2);}
+#ar {left: 746px; top: var(--p3);}
+#kr {left: 746px; top: var(--p4);}
+#xe {left: 746px; top: var(--p5);}
+#rn {left: 746px; top: var(--p6);}
+#og {left: 746px; top: var(--p7);}
+
+#la {left: var(--g4); top: var(--lantanidos);}
+#ce {left: var(--g5); top: var(--lantanidos);}
+#pr {left: var(--g6); top: var(--lantanidos);}
+#nd {left: var(--g7); top: var(--lantanidos);}
+#pm {left: var(--g8); top: var(--lantanidos);}
+#sm {left: var(--g9); top: var(--lantanidos);}
+#eu {left: var(--g10); top: var(--lantanidos);}
+#gd {left: var(--g11); top: var(--lantanidos);}
+#tb {left: var(--g12); top: var(--lantanidos);}
+#dy {left: var(--g13); top: var(--lantanidos);}
+#ho {left: var(--g14); top: var(--lantanidos);}
+#er {left: var(--g15); top: var(--lantanidos);}
+#tm {left: var(--g16); top: var(--lantanidos);}
+#yb {left: var(--g17); top: var(--lantanidos);}
+#lu {left: var(--g18); top: var(--lantanidos);}
+
+#ac {left: var(--g4); top: var(--actinidos);}
+#th {left: var(--g5); top: var(--actinidos);}
+#pa {left: var(--g6); top: var(--actinidos);}
+#u  {left: var(--g7); top: var(--actinidos);}
+#np {left: var(--g8); top: var(--actinidos);}
+#pu {left: var(--g9); top: var(--actinidos);}
+#am {left: var(--g10); top: var(--actinidos);}
+#cm {left: var(--g11); top: var(--actinidos);}
+#bk {left: var(--g12); top: var(--actinidos);}
+#cf {left: var(--g13); top: var(--actinidos);}
+#es {left: var(--g14); top: var(--actinidos);}
+#fm {left: var(--g15); top: var(--actinidos);}
+#md {left: var(--g16); top: var(--actinidos);}
+#no {left: var(--g17); top: var(--actinidos);}
+#lr {left: var(--g18); top: var(--actinidos);}

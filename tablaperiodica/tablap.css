@@ -1,0 +1,42 @@
+#contenedortp {
+	width: 800px;
+	margin: auto;
+	border: 2px solid black;
+	border-radius: 20px;
+	padding-top: 10px;
+	padding-bottom: 20px;
+}
+
+.centrar {
+	display: block;
+	margin: auto;
+}
+
+.elem  {
+	width: 40px;
+	height: 40px;
+	position: absolute;
+}
+
+#ampliado {
+	width: 124px;
+	height: 125px;
+	position: absolute;
+	left: 252px;
+	top: 14px;
+}
+
+#tablap {
+	position: relative;
+	overflow-x: scroll;
+	overflow-y: hidden;
+}
+
+@media (max-width: 830px) {
+	#contenedortp {
+		width: 100%;
+	}
+}
+#contenedortp > p {
+	margin: auto 10px;
+}
