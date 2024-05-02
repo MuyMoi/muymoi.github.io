@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1.0, user-scalable=0">
+  <title>Coger la manzana</title>
+    <style>
+body {
+  overflow: hidden;
+  background: url('fondo.png');
+  -webkit-user-select: none;
+  user-select: none;
+  font-size: 15pt;
+  font-family: sans-serif;
+}
+#oso1, #manzana {
+  position: absolute;
+}
+#manzana {
+  height: 10%;
+}
+#oso1 {
+  top: 54%;
+  height: 25%;
+}
+#ArrowLeft, #ArrowRight {
+  width: 100px;
+  height: 50px;
+  position: absolute;
+  border: none;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, .5);
+  bottom: 20px;
+}
+#ArrowLeft {
+  left: 20px;
+}
+#ArrowRight {
+  right: 20px;
+}
+#puntaje {
+  background-color: white;
+  width: 200px;
+}
+.acc {
+  border: none;
+  border-radius: 0px;
+  font-size: 15pt;
+  margin: 2px auto;
+  min-height: 40px;
+  display: block;
+}
+#b_Op {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+.cajas {
+  background-color: black;
+  border: 5px solid black;
+  color: white;
+  position: absolute;
+  text-align: center;
+  overflow-y: auto;
+  padding: 20px;
+}
+.cajas .acc {
+  width: 100%;
+}
+#dificultad {
+  background-color: white;
+  width: 200px;
+}
+  </style>
+</head>
+<body>
+<p id="puntaje">Puntos: 10</p>
+<p id="dificultad"></p>
+<button id="b_Op" class="acc">Opciones</button>
+
+<img src="1.png" id="oso1">
+<img src="manzana.svg" id="manzana">
+
+<button class="controles" id="ArrowLeft">◄</button>
+<button class="controles" id="ArrowRight">►</button>
+
+<script>
+"use strict"
+/*---Variables y constantes---*/
+const puntaje = document.getElementById("puntaje");
+const b_Op = document.getElementById('b_Op');
+const botones = document.querySelectorAll(".controles");
+const dificultad = document.getElementById("dificultad");
+let puntos = 10;
+let pausar = true;
+let sumaPuntos = 1;
+/*----------------------------*/
+/*--------------OBJETO oso--------------*/
+const oso = {
+  elemento: document.getElementById('oso1'),
+  style: document.getElementById('oso1').style,
+  x: innerWidth / 2,
+  y: parseInt(getComputedStyle(oso1).top, 10),
+  izq: false, der: false,
+  vel: Math.ceil(Math.ceil(innerHeight*0.02)/2*(innerWidth/innerHeight)),
+  ancho: undefined, alto: undefined
+}
+oso.ancho = oso.elemento.offsetWidth;
+oso.alto = oso.elemento.offsetHeight / 2;
+
+oso.cambiarposX = function (pixeles, dir){
+  oso.x += pixeles;
+  oso.style.left = oso.x + "px";
+  if (oso[dir]) requestAnimationFrame(()=> oso.cambiarposX(pixeles, dir));
+}
+oso.tocarBorde = function () {
+  if (oso.x > innerWidth - oso.ancho) {
+    oso.x = 0;
+    oso.style.left = oso.x + "px";
+  }
+  if (oso.x < 0) {
+    oso.x = innerWidth - oso.ancho;
+    oso.style.left = oso.x + "px";
+  }
+}
+oso.style.left = oso.x + "px";
+/*-------------------------------------*/
+/*---OBJETO manzana---*/
+const manzana = {
+  x: Math.floor(Math.random()*(innerWidth - 70)),
+  y: 0,
+  vel: Math.ceil(innerHeight * 0.02),
+  elemento: document.getElementById('manzana'),
+  style: document.getElementById('manzana').style,
+  ancho: undefined
+}
+manzana.ancho = manzana.elemento.offsetWidth;
+manzana.style.left = manzana.x + "px";
+
+manzana.mover = function () {
+  manzana.y += manzana.vel;
+  manzana.style.top = manzana.y + "px";
+  if (manzana.y > oso.y && manzana.y < oso.y + oso.alto) {
+    if (manzana.x + manzana.ancho > oso.x &&
+      manzana.x < oso.x + oso.elemento.offsetWidth) {
+      manzana.y = 0;
+      manzana.style.top = manzana.y + "px";
+      manzana.x = Math.floor(Math.random() * (innerWidth - manzana.ancho));
+      manzana.style.left = manzana.x + "px";
+      puntos += sumaPuntos;
+      puntaje.textContent = `Puntos: ${puntos}`;
+    }
+  }
+  if (manzana.y > innerHeight) {
+    puntos--;
+    puntaje.textContent = `Puntos: ${puntos}`;
+    manzana.x = Math.floor(Math.random() * (innerWidth - manzana.ancho));
+    manzana.style.left = manzana.x + "px";
+    manzana.y = 0;
+    if (puntos <= 0) {
+      puntaje.textContent = "Perdiste";
+      manzana.elemento.hidden = true;
+      paus_cont();
+    }
+  }
+}
+/*-------------------*/
+/*---Configuracion del fondo---*/
+document.body.style["background-size"] = `auto ${innerHeight}px`;
+/*-----------------------------*/
+/*---class Cuadro---*/
+class Cuadro {
+  div; id;
+  constructor(id, alto, ancho) {
+    this.id = "#" + id;
+    this.div = document.createElement("div");
+    this.div.id = id;
+    this.div.className = "cajas";
+    this.div.style.height = alto;
+    this.div.style.width = ancho;
+    this.div.style.left = "50%";
+    this.div.style.top = "50%";
+    this.div.style.transform = "translate(-50%,-50%)";
+  }
+  crearElemento(tipoElem, texto) {
+    const elem = document.createElement(tipoElem);
+    elem.innerHTML = texto;
+    this.div.appendChild(elem);
+  }
+  btn(texto, accionClick) {
+    const boton = document.createElement("button");
+    boton.textContent = texto;
+    boton.onclick = accionClick;
+    boton.className = "acc";
+    this.div.appendChild(boton);
+    return boton;
+  }
+  cerrar() {
+    this.div.remove();
+    paus_cont();
+  }
+  mostrar() {
+    if (!document.querySelector(this.id)) {
+      document.body.appendChild(this.div);
+      paus_cont();
+    } else {
+      this.cerrar();
+    }
+  }
+}
+/*------------------*/
+/*---OBJETO opc---*/
+const opc = new Cuadro("opc", "250px", "80%");
+//
+opc.crearElemento("h3", "Menu de opciones");
+//
+opc.btn("Continuar", ()=> opc.cerrar());
+//
+opc.btn("Reiniciar", () => {
+  puntos = 10;
+  puntaje.textContent = `Puntos: ${puntos}`;
+  manzana.x = Math.floor(Math.random()*(innerWidth - 70));
+  manzana.style.left = manzana.x + "px";
+  manzana.y = 0;
+  manzana.elemento.hidden = false;
+  opc.cerrar();
+  dft();
+});
+//
+if (document.documentElement.requestFullscreen) {
+  opc.pC = opc.btn("Jugar en pantalla completa", () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    }
+    else {
+      document.exitFullscreen();
+    }
+  });
+} else if (document.documentElement.webkitRequestFullscreen) {
+  opc.pC = opc.btn("Jugar en pantalla completa", () => {
+    if (!document.webkitFullscreenElement) {
+      document.documentElement.webkitRequestFullscreen();
+    }
+    else {
+      document.webkitExitFullscreen();
+    }
+  })
+}
+//
+opc.btn("Ayuda", () => ayuda());
+/*----------------*/
+/*---Funciones---*/
+function direccion(tecla) {
+  switch (tecla) {
+    case "ArrowLeft":
+      if (!oso.izq) {
+        oso.izq = true;
+        oso.cambiarposX(-oso.vel, "izq");
+        oso.elemento.src = "2.png";
+      }
+      break
+    case "ArrowRight":
+      if (!oso.der) {
+        oso.der = true;
+        oso.cambiarposX(oso.vel, "der");
+        oso.elemento.src = "1.png";
+      }
+  }
+}
+function detener(tecla) {
+  switch (tecla) {
+    case "ArrowLeft":
+      oso.izq = false;
+      break
+    case "ArrowRight":
+      oso.der = false;
+  }
+}
+function directec(event) {
+  if (!event.repeat) {
+    direccion(event.code);
+  }
+}
+function orientacion() {
+  if (innerWidth < innerHeight && !document.querySelector("#orient")) {
+    const orient = new Cuadro("orient", "100%", "100%");
+    //
+    orient.crearElemento("p", `Para poder jugar, debes cambiar la
+      orientacion del dispositivo o cambiar el tamaño de la ventana para que el
+      ancho sea mayor que el alto. El juego está pausado.`);
+    orient.mostrar();
+    paus_cont();
+  }
+  if (innerWidth > innerHeight && document.querySelector("#orient")) {
+    document.querySelector("#orient").remove();
+    paus_cont();
+  }
+}
+function paus_cont() {
+  if (document.querySelectorAll(".cajas").length || puntos <= 0) {
+    if (pausar === false) {
+      pausar = true;
+      oso.izq = false;
+      oso.der = false;
+      document.removeEventListener("keydown", directec);
+      for (const boton of botones) {
+        boton.ontouchstart = null;
+        boton.ontouchend = null;
+      }
+    }
+  } else if (!document.querySelectorAll(".cajas").length && puntos > 0) {
+    document.addEventListener("keydown", directec);
+    pausar = false;
+    repetir();
+    for (const boton of botones) {
+      boton.ontouchstart = function (event) {
+        event.preventDefault();
+        direccion(this.id);
+      }
+      boton.ontouchend = function (event) {
+        detener(this.id);
+      }
+    }
+  }
+}
+function dft() {
+  if (!document.querySelector("#dft")) {
+    const dft = new Cuadro("dft", "200px", "80%");
+    //
+    dft.crearElemento("h3", "Elige el nivel de dificultad");
+    //
+    dft.btn("Modo fácil", () => {
+      sumaPuntos = 2;
+      dft.cerrar();
+      dificultad.textContent = "Modo fácil";
+    });
+    //
+    dft.btn("Modo difícil", () => {
+      sumaPuntos = 1;
+      dft.cerrar();
+      dificultad.textContent = "Modo difícil";
+    });
+    //
+    dft.mostrar();
+  }
+}
+function ayuda() {
+  if (!document.querySelector("#ayuda")) {
+    const ayuda = new Cuadro("ayuda", "80%", "80%");
+    //
+    ayuda.crearElemento("h3", "Bienvenido a 'Coge la manzana'");
+    //
+    ayuda.crearElemento("p", `El objetivo de este juego es agarrar
+      todas las manzanas que puedas, para llegar al puntaje mas alto posible.
+      Si no logras agarrar una manzana, se te restará un punto. Si el puntaje
+      llega a 0, perdiste y deberas comenzar de nuevo.`);
+    //
+    ayuda.crearElemento("p",
+      "<b>Flecha derecha, Flecha izquierda:</b> Mover al oso");
+    //
+    ayuda.crearElemento("p", `<b>Tecla O:</b> Abrir el menu de opciones.
+      Tambien lo puedes abrir presionando el boton "Opciones"`);
+    //
+    ayuda.crearElemento("p", `En pantallas tactiles, puedes utilizar
+      los botones de las esquinas inferiores (◄ ►) para jugar`);
+    //
+    ayuda.btn("Continuar", () => ayuda.cerrar());
+    //
+    ayuda.mostrar();
+  }
+}
+/*--------------*/
+/*---Eventos---*/
+document.addEventListener("keydown", event => {
+  if (event.code === "KeyO") opc.mostrar();
+});
+document.onkeyup = () => detener(event.code);
+window.onresize = () => {
+  document.body.style["background-size"] = `auto ${innerHeight}px`;
+  manzana.vel = Math.ceil(innerHeight * 0.02);
+  oso.vel = Math.ceil(manzana.vel / 2 * (innerWidth / innerHeight));
+  oso.y = Math.floor(innerHeight * 0.54);
+  oso.style.top = oso.y + "px";
+  oso.alto = oso.elemento.offsetHeight / 2;
+  oso.ancho = oso.elemento.offsetWidth;
+  manzana.ancho = manzana.elemento.offsetWidth;
+  orientacion();
+}
+if (document.onfullscreenchange === null) {
+  document.onfullscreenchange = () => {
+    if (!document.fullscreenElement) {
+      opc.pC.textContent = "Jugar en pantalla completa";
+    }
+    else {
+      opc.pC.textContent = "Salir de pantalla completa";
+    }
+  }
+} else if (document.onwebkitfullscreenchange === null) {
+  document.onwebkitfullscreenchange = () => {
+    if (!document.webkitFullscreenElement) {
+      opc.pC.textContent = "Jugar en pantalla completa";
+    }
+    else {
+      opc.pC.textContent = "Salir de pantalla completa";
+    }
+  }
+}
+b_Op.onclick = () => opc.mostrar();
+/*----------------------------------*/
+/*---Ejecutar animaciones---*/
+function repetir() {
+  manzana.mover();
+  oso.tocarBorde();
+  if (!pausar) window.requestAnimationFrame(repetir);
+}
+dft();
+ayuda();
+orientacion();
+/*--------------------------*/
+</script>
+</body>
+</html>
