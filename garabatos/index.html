@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lienzo de garabatos</title>
+</head>
+
+<body>
+<canvas></canvas>
+<script>
+const canvas = document.querySelector("canvas");
+const ar = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const ci = [0,0]; // coordenadas iniciales
+let press = false; // indicador
+let ancho = ar.lineWidth = 2; // ancho del trazado
+
+//
+// --- Eventos de mouse ---
+//
+canvas.onmousedown = e => { // al comenzar a presionar el click
+	ci[0] = e.pageX; // reestablecer coordenadas iniciales
+	ci[1] = e.pageY; // ... al punto en que se hace click
+	hacerCirculo(ci[0], ci[1], ancho); // dibujar un circulo
+	press = true; // cambiar la variable o flag
+}
+
+canvas.onmousemove = e => { // al mover el mouse
+	if (press) dibujar(e.pageX, e.pageY); // solo dibujar si el click esta presionado
+}
+
+document.onmouseup = () => { // al soltar el click
+	press = false; // cambiar el indicador
+	hacerCirculo(ci[0], ci[1], ancho); // y hacer un circulo
+}
+
+//
+// --- Eventos tactiles (no se necesita la variable press)
+//
+canvas.ontouchstart = e => { // al comienzo del toque
+	toque = e.touches[0]; // almacenar el toque en una variable
+	ci[0] = toque.pageX; // reestablecer coordenadas iniciales
+	ci[1] = toque.pageY; // ... al punto donde se toca
+	hacerCirculo(ci[0], ci[1], ancho); // y hacer un circulo
+}
+
+canvas.ontouchmove = e => { // al mover el dedo
+	e.preventDefault(); // prevenir el desplazamiento de la pagina
+	toque = e.touches[0]; 
+	dibujar(toque.pageX, toque.pageY); // dibujar la trayectoria del dedo
+}
+
+canvas.ontouchend = () => { // al levantar el dedo
+	hacerCirculo(ci[0], ci[1], ancho); // hacer un circulo
+}
+
+//
+//---Funciones
+//
+function dibujar(x,y) {
+	ar.beginPath();
+	ar.moveTo(ci[0], ci[1]);
+	ar.lineTo(x,y);
+	ar.stroke();
+	ci[0] = x;
+	ci[1] = y;
+}
+
+function hacerCirculo(x,y,r) {
+	ar.beginPath();
+	ar.arc(x, y, r, 0, Math.PI*2);
+	ar.fill();
+}
+</script>
+</body>
+</html>
