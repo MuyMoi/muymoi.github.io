@@ -1,3 +1,4 @@
+
 <!DOCTYPE HTML>
 <html>
 
@@ -5,19 +6,38 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lienzo de garabatos</title>
+<style>
+/* posicionamiento de los inputs */
+input[type="color"] { /* seleccion por atributo */
+	position: absolute;
+	left: 30px;
+	top: 30px;
+}
+input[type="range"] {
+	position: absolute;
+	left: 30px;
+	top: 70px;
+}
+</style>
 </head>
 
 <body>
 <canvas></canvas>
+<input type="color" />
+<input type="range" min="1" max="40" value="2"/>
 <script>
 const canvas = document.querySelector("canvas");
 const ar = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+const inputColor = document.querySelector("input[type='color']");
+const inputGrosor = document.querySelector("input[type='range']"); 
 const ci = [0,0]; // coordenadas iniciales
 let press = false; // indicador
-let ancho = ar.lineWidth = 2; // ancho del trazado
+let ancho = ar.lineWidth = inputGrosor.value;  // ancho del trazado
+let radio = ancho/2; // radio del circulo dibujado al final del trazo
+ar.strokeStyle = ar.fillStyle = inputColor.value
 
 //
 // --- Eventos de mouse ---
@@ -25,17 +45,21 @@ let ancho = ar.lineWidth = 2; // ancho del trazado
 canvas.onmousedown = e => { // al comenzar a presionar el click
 	ci[0] = e.pageX; // reestablecer coordenadas iniciales
 	ci[1] = e.pageY; // ... al punto en que se hace click
-	hacerCirculo(ci[0], ci[1], ancho); // dibujar un circulo
 	press = true; // cambiar la variable o flag
 }
 
 canvas.onmousemove = e => { // al mover el mouse
-	if (press) dibujar(e.pageX, e.pageY); // solo dibujar si el click esta presionado
+	if (press) {
+	dibujar(e.pageX, e.pageY); // solo dibujar si el click esta presionado
+	hacerCirculo(ci[0], ci[1], radio); // si el tamaño de linea
+	// es muy grande, el trazo se verá feo. Haciendo circulos
+	// se ve mucho mejor.
+	}
 }
 
 document.onmouseup = () => { // al soltar el click
 	press = false; // cambiar el indicador
-	hacerCirculo(ci[0], ci[1], ancho); // y hacer un circulo
+	hacerCirculo(ci[0], ci[1], radio); // y hacer un circulo
 }
 
 //
@@ -45,23 +69,45 @@ canvas.ontouchstart = e => { // al comienzo del toque
 	toque = e.touches[0]; // almacenar el toque en una variable
 	ci[0] = toque.pageX; // reestablecer coordenadas iniciales
 	ci[1] = toque.pageY; // ... al punto donde se toca
-	hacerCirculo(ci[0], ci[1], ancho); // y hacer un circulo
 }
 
 canvas.ontouchmove = e => { // al mover el dedo
 	e.preventDefault(); // prevenir el desplazamiento de la pagina
 	toque = e.touches[0]; 
 	dibujar(toque.pageX, toque.pageY); // dibujar la trayectoria del dedo
+	hacerCirculo(ci[0], ci[1], radio);
 }
 
 canvas.ontouchend = () => { // al levantar el dedo
-	hacerCirculo(ci[0], ci[1], ancho); // hacer un circulo
+	hacerCirculo(ci[0], ci[1], radio); // hacer un circulo
+}
+
+//
+// Al cambiar el estado de los inputs
+//
+inputColor.onchange = () => {
+	ar.strokeStyle = ar.fillStyle = inputColor.value;
+}
+
+inputGrosor.onchange = () => {
+	ancho = ar.lineWidth = inputGrosor.value;
+	radio = ancho/2
 }
 
 //
 //---Funciones
 //
 function dibujar(x,y) {
+/* Se encargará de realizar el trazado de la trayectoria del dedo
+o puntero.
+Sin embargo se necesitan dos puntos de coordenadas: las antiguas
+y las nuevas (la nueva posicion del dedo o puntero). Estas
+coordenadas van cambiando constantemente, asi que se hace
+necesario asignarle a las viejas el valor de las nuevas para
+poder trazar una recta entre ellas. Elegi trazar lineas rectas
+en vez de puntos individuales, pues si el usuario mueve muy rapido
+el puntero o el dedo, quedaban vacios en el trazo.
+*/
 	ar.beginPath();
 	ar.moveTo(ci[0], ci[1]);
 	ar.lineTo(x,y);
@@ -71,10 +117,18 @@ function dibujar(x,y) {
 }
 
 function hacerCirculo(x,y,r) {
+/*
+Se utiliza porque si el usuario solo quiere hacer un punto
+haciendo click sin trazar un camino, la funcion anterior no
+lo dibuja. Asi que recurro a esta funcion. Recibe las coordenadas
+x, y, y el radio.
+*/
 	ar.beginPath();
 	ar.arc(x, y, r, 0, Math.PI*2);
 	ar.fill();
 }
+
+
 </script>
 </body>
 </html>
