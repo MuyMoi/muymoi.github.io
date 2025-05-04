@@ -11,8 +11,7 @@ private:
   float notas[3] = {0.0, 0.0, 0.0}; //nota del primer, segundo
   // y tercer corte respectivamente
 public:
-
-	void mostrar() {
+  void mostrar() {
     cout << "  -- DATOS DEL ESTUDIANTE: --\n";
     cout << "ID: " << ID << endl;
     cout << "Nombre: " << nombre << endl;
