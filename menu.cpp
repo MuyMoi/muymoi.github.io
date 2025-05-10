@@ -11,8 +11,11 @@ private:
   float notas[3] = {0.0, 0.0, 0.0}; //nota del primer, segundo
   // y tercer corte respectivamente
 public:
-  void mostrar() {
-    cout << "  -- DATOS DEL ESTUDIANTE: --\n";
+  string id() {
+    return ID;
+  }
+
+	void mostrar() {
     cout << "ID: " << ID << endl;
     cout << "Nombre: " << nombre << endl;
     cout << "Carrera: " << carrera << endl;
@@ -43,6 +46,7 @@ public:
       pedirID();
       return;
     }
+
     for (int i=1; i<tam; i++)
       if (!isdigit(ID[i])) {
         num=false;
@@ -109,23 +113,65 @@ public:
       return;
     }
   }
+};
 
-  void llenar() {
-    pedirID();
-    pedirnombre();
-    pedircarrera();
-    pediredad();
-    pedirnota(1);
-    pedirnota(2);
-    pedirnota(3);
+class ListaEst {
+private:
+  Estudiante *V;
+  int tam;
+public:
+  ListaEst(int t) {
+    tam=t;
+    V=new Estudiante[tam];
+  }
+
+  void crear() {
+    Estudiante *aux= new Estudiante[tam+1];
+    for (int i = 0; i < tam; i++)
+      aux[i] = V[i];
+
+    aux[tam] = Estudiante();
+    delete[] V;
+    V=aux;
+    tam++;
+
+    //Verificar que el nuevo id no este repetido
+    bool rep; //repetido
+    do {
+      V[tam-1].pedirID();
+      string nuevoid = V[tam-1].id();
+
+      rep=false;
+      for (int i = 0; i < tam-1; i++){
+        if (nuevoid == V[i].id()) {
+          cout << "Error: ID repetido\n\n";
+          rep=true;
+          break;
+        }
+      } 
+    } while (rep);
+
+    //lleno los demas datos
+    V[tam-1].pedirnombre();
+    V[tam-1].pedircarrera();
+    V[tam-1].pediredad();
+    V[tam-1].pedirnota(1);
+    V[tam-1].pedirnota(2);
+    V[tam-1].pedirnota(3);
+  }
+
+  void mostrar(){
+    for (int i = 0; i < tam; i++)
+    {
+      cout << "\n       ESTUDIANTE "<<i+1 << ":\n";
+      V[i].mostrar();
+    }
   }
 };
 
-int main() {
-  Estudiante est;
 
-  est.llenar();
-  getchar();
+int main() {
+  ListaEst L(0);
 
   string opc;
   while (opc !="7") {
@@ -143,8 +189,10 @@ int main() {
     getline(cin,opc);
 
     if (opc == "1") {
+      L.crear();
     }
     else if (opc== "2") {
+      L.mostrar();
     }
     else if (opc == "3") {}
     else if (opc == "4") {}
