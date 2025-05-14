@@ -46,7 +46,7 @@ public:
       pedirID();
       return;
     }
-
+/**/
     for (int i=1; i<tam; i++)
       if (!isdigit(ID[i])) {
         num=false;
@@ -57,6 +57,7 @@ public:
       pedirID();
       return;
     }
+/**/
   }
 
   void pedircarrera() {
@@ -120,6 +121,10 @@ private:
   Estudiante *V;
   int tam;
 public:
+  /*int TAM() {
+    return tam;
+  }*/
+
   ListaEst(int t) {
     tam=t;
     V=new Estudiante[tam];
@@ -152,20 +157,93 @@ public:
     } while (rep);
 
     //lleno los demas datos
-    V[tam-1].pedirnombre();
+    /**/V[tam-1].pedirnombre();
     V[tam-1].pedircarrera();
     V[tam-1].pediredad();
     V[tam-1].pedirnota(1);
     V[tam-1].pedirnota(2);
-    V[tam-1].pedirnota(3);
+    V[tam-1].pedirnota(3);/**/
+
+    cout << "\n     Creado correctamente\n\n";
   }
 
   void mostrar(){
+    if (tam==0) {
+      cout << "     No hay ningun estudiante\n\n";
+    }
     for (int i = 0; i < tam; i++)
     {
       cout << "\n       ESTUDIANTE "<<i+1 << ":\n";
       V[i].mostrar();
     }
+  }
+
+  void buscar() {
+    string codigo;
+    cout << "Escriba el codigo a buscar: ";
+    getline(cin, codigo);
+
+    if (codigo.length() == 0) {
+      cout << "No deje el campo vacio\n\n";
+      buscar();
+      return;
+    }
+
+    for (int i = 0; i < tam; i++){
+      if (codigo == V[i].id()) {
+        cout << "\n     Estudiante encontrado:\n";
+        V[i].mostrar();
+        return;
+      }
+    }
+
+    cout << "\n        No se ha encontrado ningun estudiante con ese codigo.\n\n";
+  }
+
+  void borrar() {
+    if (tam == 0) {
+      cout << "          Aun no se han agregado estudiantes\n";
+      return;
+    }
+    string codigo;
+    cout << "Escriba el codigo del estudiante a borrar: ";
+    getline(cin, codigo);
+
+    if (codigo.length() == 0) {
+      cout << "No deje el campo vacio\n\n";
+      borrar();
+      return;
+    }
+
+    //para el caso de que si se encuentre coincidencia,
+    //se cogerá el vector auxiliar. Si no hay
+    //coincidencias y por ende no hay quien borrar,
+    //se dejará el original
+    Estudiante *aux= new Estudiante[tam-1];
+
+    int p;
+    for (int i=0; i<tam; i++) {
+      if (i==tam-1 && codigo!=V[i].id() ) {
+        cout << "\n      No se encontraron coincidencias \n\n";
+        delete[] aux;
+        return;
+      }
+      if (codigo != V[i].id() )
+        aux[i] = V[i]; 
+      else {
+        p=i;
+        break;
+      }
+    }
+
+    for (int i=p; i < tam-1; ++i)
+      aux[i] = V[i+1];
+
+    delete[] V;
+    V=aux;
+    tam--;
+
+    cout << "\n     Borrado correctamente\n\n";
   }
 };
 
@@ -184,6 +262,7 @@ int main() {
     << "5.Modificar\n"
     << "6.Notas\n"
     << "7.Salir\n\n";
+    //cout << "Tamano del vector: " << L.TAM() << "\n\n";
 
     cout << "--Digite la opcion del 1 al 7: ";
     getline(cin,opc);
@@ -194,8 +273,12 @@ int main() {
     else if (opc== "2") {
       L.mostrar();
     }
-    else if (opc == "3") {}
-    else if (opc == "4") {}
+    else if (opc == "3") {
+      L.buscar();
+    }
+    else if (opc == "4") {
+      L.borrar();
+    }
     else if (opc == "5") {}
     else if (opc == "6") {}
 
