@@ -11,9 +11,13 @@ private:
   float notas[3] = {0.0, 0.0, 0.0}; //nota del primer, segundo
   // y tercer corte respectivamente
 public:
-  string id() {
-    return ID;
-  }
+  Estudiante() : ID(""), nombre(""), carrera(""), edad(0) {}
+
+  string id() { return ID; }
+  string NOMBRE() { return nombre; }
+  string CARRERA() { return carrera; }
+  int EDAD() {return edad; }
+  float NOTA(int c) {return notas[c-1]; } //c : corte
 
 	void mostrar() {
     cout << "ID: " << ID << endl;
@@ -236,14 +240,55 @@ public:
     int p=buscarpos();
 
     if (p>=0){
-      cout << "   INGRESE LOS NUEVOS DATOS\n";
-      V[p].pedirnombre();
-      V[p].pedircarrera();
-      V[p].pediredad();
-      V[p].pedirnota(1);
-      V[p].pedirnota(2);
-      V[p].pedirnota(3);
-      cout << "\n     Modificado correctamente\n\n";
+      string x=" ";
+
+      while (x != "4") {
+        system("clear");
+
+        cout << "\n\n\tM E N U   D E   M O D I F I C A C I O N\n"
+        "\tEstudiante " << V[p].id() <<
+        "\n\n1. Modificar nombre\t"
+        "[Actual: " << V[p].NOMBRE() << "]\n"
+        "2. Modificar carrera\t"
+        "[Actual: " << V[p].CARRERA() << "]\n"
+        "3. Modificar edad\t"
+        "[Actual: " << V[p].EDAD() << "]\n"
+        "4. Volver al menu principal\n\n";
+
+        cout << "--Digite la opcion que desea modificar: ";
+        getline(cin, x);
+
+        if (x.length()!=1) {
+          cout << "Opcion no valida\n";
+          cout << "Presione ENTER para continuar:\n"; getchar(); 
+          continue;
+        }
+      
+        int opc = x[0]-'0';
+        switch (opc) {
+        case 1:
+          V[p].pedirnombre();
+          cout << "    Modificado correctamente\n\n";
+          break;
+        case 2:
+          V[p].pedircarrera();
+          cout << "    Modificado correctamente\n\n";
+          break;
+        case 3:
+          V[p].pediredad();
+          cout << "    Modificado correctamente\n\n";
+          break;
+        case 4:
+          cout << "Volviendo al menu principal...\n";
+          break;
+        default:
+          cout << "Opcion no valida\n";
+        }
+
+        if (opc!=4) {
+          cout << "Presione ENTER para continuar:\n"; getchar();   
+        }
+      }
     }
   }
 
@@ -253,44 +298,63 @@ public:
 int main() {
   ListaEst L(0);
 
-  string opc;
-  while (opc !="7") {
+  string x="";
+  while (x !="7") {
     system("clear");
-    cout << "    ---MENU DEL DOCENTE---\n"
-    << "1.Crear\n"
-    << "2.Mostrar\n"
-    << "3.Buscar\n"
-    << "4.Borrar\n"
-    << "5.Modificar\n"
-    << "6.Notas\n"
+    cout << "\tM E N U   D E L   D O C E N T E\n"
+    << "1.Crear estudiante\n"
+    << "2.Mostrar listado\n"
+    << "3.Buscar estudiante\n"
+    << "4.Borrar estudiante\n"
+    << "5.Modificar estudiante\n"
+    << "6.Ingresar notas del estudiante\n"
     << "7.Salir\n\n";
     cout << "Numero de estudiantes: " << L.TAM() << "\n\n";
 
     cout << "--Digite la opcion del 1 al 7: ";
-    getline(cin,opc);
+    getline(cin,x);
 
-    if (opc == "1") {
-      L.crear();
-    }
-    else if (opc== "2") {
-      L.mostrar();
-    }
-    else if (opc == "3") {
-      L.buscar();
-    }
-    else if (opc == "4") {
-      L.borrar();
-    }
-    else if (opc == "5") {
-      L.modificar();
-    }
-    else if (opc == "6") {}
-
-    else if (opc == "7")
-      cout << "Saliendo...\n";
-
-    else
+    if (x.length()!=1) {
       cout << "\nIntroduzca una opcion valida\n";
+      continue;
+    }
+
+    int opc = x[0] - '0';
+    switch (opc) {
+    case 1:
+      system("clear");
+      cout << "\tC R E A R   E S T U D I A N T E\n";
+      L.crear();
+      break;
+    case 2:
+      system("clear");
+      cout << "\tL I S T A D O\n";
+      L.mostrar();
+      break;
+    case 3:
+      system("clear");
+      cout << "\tB U S C A R   E S T U D I A N T E\n";
+      L.buscar();
+      break;
+    case 4:
+      system("clear");
+      cout << "\tB O R R A R   E S T U D I A N T E\n";
+      L.borrar();
+      break;
+    case 5:
+      system("clear");
+      cout << "\tM O D I F I C A R   E S T U D I A N T E\n";
+      L.modificar();
+      break;
+    case 6:
+      break;
+    case 7:
+      cout << "Saliendo...\n";
+      break;
+    default:
+      cout << "\nIntroduzca una opcion valida\n";
+
+    }
 
     cout << "Presione ENTER para continuar:\n";
     getchar();
