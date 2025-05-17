@@ -1,7 +1,14 @@
 #include <iostream>
 #include <ctype.h>
+#include <iomanip>
 using namespace std;
 
+#define LIMPIAR system("cls");
+#define a1 10
+#define a2 31
+#define a3 5
+#define a4 3
+#define ANCHO a1+2*a2+4*a3+a4
 class Estudiante {
 private:
   string ID;
@@ -18,15 +25,26 @@ public:
   string CARRERA() { return carrera; }
   int EDAD() {return edad; }
   float NOTA(int c) {return notas[c-1]; } //c : corte
+  float def() { return notas[0]*0.3 + notas[1]*0.35 + notas[2]*0.35; }
 
 	void mostrar() {
-    cout << "ID: " << ID << endl;
-    cout << "Nombre: " << nombre << endl;
-    cout << "Carrera: " << carrera << endl;
-    cout << "Edad: " << edad << endl;
-    cout << "Nota corte 1: " << notas[0] << endl;
-    cout << "Nota corte 2: " << notas[1] << endl;
-    cout << "Nota corte 3: " << notas[2] << endl;
+    cout << fixed << setprecision(1) << left;
+    
+    int tam=nombre.length();
+    int pos;
+    if (tam>30)
+      pos=nombre.find(" ", 17);
+    else
+      pos=tam;
+    
+    cout << setw(a1) << ID << setw(a2) << nombre.substr(0,pos) << setw(a2) << carrera << setw(a3)
+    << edad << setw(a3) << notas[0] << setw(a3) << notas[1] << setw(a3) << notas[2]
+    << setw(a4) << def() << endl;
+    
+    if (nombre.length()>30) {
+      cout << setw(10) << "";
+      cout << nombre.substr(pos) << endl;
+    }
   }
 
   void pedirnombre() {
@@ -68,6 +86,11 @@ public:
     cout << "Digitar la carrera: "; getline(cin, carrera);
     if (carrera.length() == 0) {
       cout << "No puede dejar el campo carrera vacio\n\n";
+      pedircarrera();
+      return;
+    }
+    if (carrera.length() > 30) {
+      cout << "Nombre muy largo. Trate de acortar a maximo 30 caracteres\n\n";
       pedircarrera();
       return;
     }
@@ -124,6 +147,18 @@ class ListaEst {
 private:
   Estudiante *V;
   int tam;
+
+  void encabezado() {
+    cout << left;
+    cout << setw(a1) << "Codigo" << setw(a2) << "Nombre" << setw(a2) << "Carrera" << setw(a3)
+    << "Edad" << setw(a3) << "N1" << setw(a3) << "N2" << setw(a3) << "N3"
+    << setw(a4) << "DEF" << endl;
+  }
+
+  void guiones() {
+    cout << setfill('-') << setw(ANCHO) << "" << endl << setfill(' ');
+  }
+
 public:
   int TAM() {
     return tam;
@@ -199,12 +234,16 @@ public:
   void mostrar(){
     if (tam==0) {
       cout << "   No hay ningun estudiante\n\n";
+      return;
     }
+    
+    encabezado();
     for (int i = 0; i < tam; i++)
     {
-      cout << "\n       ESTUDIANTE "<<i+1 << ":\n";
+      guiones();
       V[i].mostrar();
     }
+    cout << "\n\n";
   }
 
   void buscar() {
@@ -212,7 +251,10 @@ public:
 
     if (p>=0){
       cout << "\n     Estudiante encontrado:\n";
+      encabezado();
+      guiones();
       V[p].mostrar();
+      guiones();
     }
   }
 
@@ -243,7 +285,7 @@ public:
       string x=" ";
 
       while (x != "4") {
-        system("clear");
+        LIMPIAR
 
         cout << "\n\n\tM E N U   D E   M O D I F I C A C I O N\n"
         "\tEstudiante " << V[p].id() <<
@@ -300,7 +342,7 @@ int main() {
 
   string x="";
   while (x !="7") {
-    system("clear");
+    LIMPIAR
     cout << "\tM E N U   D E L   D O C E N T E\n"
     << "1.Crear estudiante\n"
     << "2.Mostrar listado\n"
@@ -322,27 +364,27 @@ int main() {
     int opc = x[0] - '0';
     switch (opc) {
     case 1:
-      system("clear");
+      LIMPIAR
       cout << "\tC R E A R   E S T U D I A N T E\n";
       L.crear();
       break;
     case 2:
-      system("clear");
+      LIMPIAR
       cout << "\tL I S T A D O\n";
       L.mostrar();
       break;
     case 3:
-      system("clear");
+      LIMPIAR
       cout << "\tB U S C A R   E S T U D I A N T E\n";
       L.buscar();
       break;
     case 4:
-      system("clear");
+      LIMPIAR
       cout << "\tB O R R A R   E S T U D I A N T E\n";
       L.borrar();
       break;
     case 5:
-      system("clear");
+      LIMPIAR
       cout << "\tM O D I F I C A R   E S T U D I A N T E\n";
       L.modificar();
       break;
@@ -356,7 +398,7 @@ int main() {
 
     }
 
-    cout << "Presione ENTER para continuar:\n";
+    cout << "Presione ENTER para continuar:";
     getchar();
   }
 
