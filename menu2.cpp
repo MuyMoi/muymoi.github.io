@@ -1,12 +1,13 @@
 #include <iostream>
 #include <ctype.h>
 #include <iomanip>
+#include <fstream>
 using namespace std;
 
-#define LIMPIAR system("cls");
+#define LIMPIAR system("clear");
 #define a1 10
 #define a2 31
-#define a3 5
+#define a3 6
 #define a4 3
 #define ANCHO a1+2*a2+4*a3+a4
 class Estudiante {
@@ -19,6 +20,10 @@ private:
   // y tercer corte respectivamente
 public:
   Estudiante() : ID(""), nombre(""), carrera(""), edad(0) {}
+  Estudiante(string id,string n,string c,int e, float n1,float n2,float n3)
+  : ID(id), nombre(n), carrera(c), edad(e) {
+    notas[0]=n1, notas[1]=n2, notas[2]=n3;
+  }
 
   string id() { return ID; }
   string NOMBRE() { return nombre; }
@@ -27,7 +32,7 @@ public:
   float NOTA(int c) {return notas[c-1]; } //c : corte
   float def() { return notas[0]*0.3 + notas[1]*0.35 + notas[2]*0.35; }
 
-	void mostrar() {
+  void mostrar() {
     cout << fixed << setprecision(1) << left;
     
     int tam=nombre.length();
@@ -41,7 +46,7 @@ public:
     << edad << setw(a3) << notas[0] << setw(a3) << notas[1] << setw(a3) << notas[2]
     << setw(a4) << def() << endl;
     
-    if (nombre.length()>30) {
+    if (tam>30) {
       cout << setw(10) << "";
       cout << nombre.substr(pos) << endl;
     }
@@ -51,6 +56,11 @@ public:
     cout << "Digitar nombre: "; getline(cin, nombre);
     if (nombre.length() == 0) {
       cout << "No puede dejar el campo nombre vacio\n\n";
+      pedirnombre();
+      return;
+    }
+    if (nombre.find(",") != -1) {
+      cout << "No puede introducir comas\n\n";
       pedirnombre();
       return;
     }
@@ -68,18 +78,20 @@ public:
       pedirID();
       return;
     }
-/**/
+
     for (int i=1; i<tam; i++)
       if (!isdigit(ID[i])) {
         num=false;
         break;
     }
-    if (tam != 9 or ID[0] != 'T' or num==false) {
-      cout << "Valor erroneo.\n\n";
+    if (tam != 9 or (ID[0] != 'T' and ID[0] != 't') or num==false) {
+      cout << "No valido.\n\n";
       pedirID();
       return;
     }
-/**/
+
+    ID[0] = 'T';
+
   }
 
   void pedircarrera() {
@@ -91,6 +103,12 @@ public:
     }
     if (carrera.length() > 30) {
       cout << "Nombre muy largo. Trate de acortar a maximo 30 caracteres\n\n";
+      pedircarrera();
+      return;
+    }
+
+    if (carrera.find(",") != -1) {
+      cout << "No puede introducir comas\n\n";
       pedircarrera();
       return;
     }
@@ -110,7 +128,7 @@ public:
     catch(...) {
       edad = -1;
     }
-    if (edad <= 1 or edad >= 150) { //asumiré estos limites
+    if (edad <= 1 or edad >= 130) { //asumiré estos limites
       cout << "Edad no valida\n\n";
       pediredad();
       return;
@@ -156,17 +174,19 @@ private:
   }
 
   void guiones() {
-    cout << setfill('-') << setw(ANCHO) << "" << endl << setfill(' ');
+    cout << setfill('_') << setw(ANCHO) << "" << endl << setfill(' ');
   }
 
-public:
-  int TAM() {
-    return tam;
-  }
+  void redimensionar(int n) {
+    if (n<=0) return;
 
-  ListaEst(int t) {
-    tam=t;
-    V=new Estudiante[tam];
+    Estudiante *aux= new Estudiante[tam+n];
+    for (int i = 0; i < tam; i++)
+      aux[i] = V[i];
+
+    delete[] V;
+    V=aux;
+    tam += n;
   }
 
   int buscarpos() { //retorna la posicion del ID buscado
@@ -194,21 +214,60 @@ public:
     return -1;
   }
 
-  void crear() {
-    Estudiante *aux= new Estudiante[tam+1];
-    for (int i = 0; i < tam; i++)
-      aux[i] = V[i];
+public:
+  int TAM() {
+    return tam;
+  }
 
-    aux[tam] = Estudiante();
-    delete[] V;
-    V=aux;
-    tam++;
+  ListaEst(int t) {
+    tam=t;
+    V=new Estudiante[tam];
+  }
+
+  void cargarDatos() {
+    ifstream a("datos.csv");
+
+    int n=0; string x;
+    while (getline(a,x)) {
+        n++;
+    }
+
+    redimensionar(n);
+    a.close();
+    a.open("datos.csv");
+
+    string id, nom, carr;
+    int ed;
+    float n1,n2,n3;
+    for (int i=0; i<tam; i++) {
+      getline(a, id, ',');
+      getline(a, nom, ',');
+      getline(a, carr, ',');
+      a >> ed;
+      a.ignore();
+      a >> n1;
+      a.ignore();
+      a >> n2;
+      a.ignore();
+      a >> n3;
+      a.ignore();
+
+      V[i]=Estudiante(id,nom,carr,ed,n1,n2,n3);
+    }
+
+    a.close();
+  }
+
+  void crear() {
+    redimensionar(1);
+
+    int p=tam-1;
 
     //Verificar que el nuevo id no este repetido
     bool rep; //repetido
     do {
-      V[tam-1].pedirID();
-      string nuevoid = V[tam-1].id();
+      V[p].pedirID();
+      string nuevoid = V[p].id();
 
       rep=false;
       for (int i = 0; i < tam-1; i++){
@@ -221,12 +280,12 @@ public:
     } while (rep);
 
     //lleno los demas datos
-    /**/V[tam-1].pedirnombre();
-    V[tam-1].pedircarrera();
-    V[tam-1].pediredad();
-    V[tam-1].pedirnota(1);
-    V[tam-1].pedirnota(2);
-    V[tam-1].pedirnota(3);/**/
+    V[p].pedirnombre();
+    V[p].pedircarrera();
+    V[p].pediredad();
+    V[p].pedirnota(1);
+    V[p].pedirnota(2);
+    V[p].pedirnota(3);
 
     cout << "\n     Creado correctamente\n\n";
   }
@@ -305,6 +364,7 @@ public:
           cout << "Presione ENTER para continuar:\n"; getchar(); 
           continue;
         }
+
       
         int opc = x[0]-'0';
         switch (opc) {
@@ -334,24 +394,38 @@ public:
     }
   }
 
+  void guardardatos() {
+    ofstream o("datos.csv");
+
+    for (int i=0; i<tam; i++) {
+      o << V[i].id() << "," << V[i].NOMBRE() << ","
+        << V[i].CARRERA() << "," << V[i].EDAD() << ","
+        << V[i].NOTA(1) << "," << V[i].NOTA(2) << ","
+        << V[i].NOTA(3) << endl;
+    }
+
+    o.close();
+  }
+
 };
 
 
 int main() {
   ListaEst L(0);
+  L.cargarDatos();
 
   string x="";
   while (x !="7") {
     LIMPIAR
     cout << "\tM E N U   D E L   D O C E N T E\n"
-    << "1.Crear estudiante\n"
-    << "2.Mostrar listado\n"
-    << "3.Buscar estudiante\n"
-    << "4.Borrar estudiante\n"
-    << "5.Modificar estudiante\n"
-    << "6.Ingresar notas del estudiante\n"
-    << "7.Salir\n\n";
-    cout << "Numero de estudiantes: " << L.TAM() << "\n\n";
+    "1.Crear estudiante\n"
+    "2.Mostrar listado\n"
+    "3.Buscar estudiante\n"
+    "4.Borrar estudiante\n"
+    "5.Modificar estudiante\n"
+    "6.Ingresar notas del estudiante\n"
+    "7.Salir\n\n"
+    "Numero de estudiantes: " << L.TAM() << "\n\n";
 
     cout << "--Digite la opcion del 1 al 7: ";
     getline(cin,x);
@@ -361,31 +435,33 @@ int main() {
       continue;
     }
 
+    cout << setw(30) << "";
+
     int opc = x[0] - '0';
     switch (opc) {
     case 1:
       LIMPIAR
-      cout << "\tC R E A R   E S T U D I A N T E\n";
+      cout << "C R E A R   E S T U D I A N T E\n\n";
       L.crear();
       break;
     case 2:
       LIMPIAR
-      cout << "\tL I S T A D O\n";
+      cout << "L I S T A D O\n\n";
       L.mostrar();
       break;
     case 3:
       LIMPIAR
-      cout << "\tB U S C A R   E S T U D I A N T E\n";
+      cout << "B U S C A R   E S T U D I A N T E\n\n";
       L.buscar();
       break;
     case 4:
       LIMPIAR
-      cout << "\tB O R R A R   E S T U D I A N T E\n";
+      cout << "B O R R A R   E S T U D I A N T E\n\n";
       L.borrar();
       break;
     case 5:
       LIMPIAR
-      cout << "\tM O D I F I C A R   E S T U D I A N T E\n";
+      cout << "M O D I F I C A R   E S T U D I A N T E\n\n";
       L.modificar();
       break;
     case 6:
@@ -401,6 +477,8 @@ int main() {
     cout << "Presione ENTER para continuar:";
     getchar();
   }
+
+  L.guardardatos();
 
   return 0;
 }
