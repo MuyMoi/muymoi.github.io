@@ -2,9 +2,12 @@
 #include <ctype.h>
 #include <iomanip>
 #include <fstream>
+#include <thread>
+#include <chrono>
 using namespace std;
 
 #define LIMPIAR system("clear");
+#define ESPERAR(tiempo) this_thread::sleep_for(tiempo)
 #define a1 10
 #define a2 31
 #define a3 6
@@ -20,10 +23,6 @@ private:
   // y tercer corte respectivamente
 public:
   Estudiante() : ID(""), nombre(""), carrera(""), edad(0) {}
-  //Estudiante(string id,string n,string c,int e, float n1,float n2,float n3)
-  //: ID(id), nombre(n), carrera(c), edad(e) {
-  //  notas[0]=n1, notas[1]=n2, notas[2]=n3;
-  //}
 
   string id() { return ID; }
   string NOMBRE() { return nombre; }
@@ -126,7 +125,7 @@ public:
     return asgnredad(n);
   }
   bool asgnrnota(float n, int c){
-    if (n < 0 or n > 5) {
+    if (n < 0.5 or n > 5) {
       cout << "Nota no valida\n\n";
       return false;
     }
@@ -138,7 +137,7 @@ public:
       cout << "No puede dejar el campo vacio\n\n";
       return false;
     }
-    int n;
+    float n;
     try {
       n = stof(x);
     }
@@ -223,22 +222,33 @@ private:
   }
 
   int buscarpos() { //retorna la posicion del ID buscado
-    if (tam==0) {
-      cout << "\tNo hay ningun estudiante\n\n";
-      return -2;
-    }
-
     string codigo;
     cout << "Escriba el codigo a buscar: ";
     getline(cin, codigo);
 
+    int r = buscarpos(codigo);
+    if (r==-1)
+      cout << "\tNo se encontraron coincidencias\n";
+    else if (r==-2)
+      cout << "\tNo hay ningun estudiante\n\n";
+
+    return r;
+  }
+
+  int buscarpos(string codigo) {
+    if (tam==0)
+      return -2; //No hay estudiantes
+
+    if (codigo.length()>0 && codigo[0]=='t')
+      codigo[0]='T';
+
     for (int i = 0; i < tam; i++){
       if (codigo == V[i].id()) {
-        return i;
+        return i; //Si se encuentra: retorna mayor o igual a 0
       }
     }
 
-    cout << "\tNo se encontraron coincidencias\n\n";
+    //No se encuentra
     return -1;
   }
 
@@ -259,28 +269,47 @@ public:
 
     while (getline(a,x)) {
       redimensionar(1);
+      string codigo;
       int p1,p2,p3,p4,p5,p6,p7;
 
-      p1=x.find(',');      
-      if (  V[i].asgnrID(x.substr(0,p1))  ) {
+      p1=x.find(',');
+      codigo = x.substr(0,p1);
+      cout << "Leyendo datos del estudiante con codigo " << codigo << "\n";
+
+      if (buscarpos(codigo)>=0) {
+        cout << "Advertencia: codigo " << codigo << " repetido. Se procede a ignorar\n";
+        tam--;
+        ESPERAR(2000ms);
+        continue;
+      }
+
+      if (  V[i].asgnrID(codigo)  ) {
         p2 = x.find(',',p1+1);
         V[i].asgnrnombre(x.substr(p1+1,p2-p1-1));
+        
         p3 = x.find(',',p2+1);
         V[i].asgnrcarrera(x.substr(p2+1,p3-p2-1));
+        
         p4 = x.find(',',p3+1);
         V[i].asgnredad(x.substr(p3+1,p4-p3-1));
+        
         p5 = x.find(',',p4+1);
         V[i].asgnrnota(x.substr(p4+1,p5-p4-1), 1);
+        
         p6 = x.find(',',p5+1);
         V[i].asgnrnota(x.substr(p5+1,p6-p5-1), 2);
+        
         p7 = x.find(',',p6+1);
         V[i].asgnrnota(x.substr(p6+1,p7-p6-1), 3);
 
         i++;
       }
       else {
+        cout << "Advertencia: codigo " << codigo << " no valido. Se procede a ignorar\n";
         tam--;
+        ESPERAR(2000ms);
       }
+      ESPERAR(100ms);
     }
 
     a.close();
@@ -311,9 +340,6 @@ public:
     V[p].pedirnombre();
     V[p].pedircarrera();
     V[p].pediredad();
-    V[p].pedirnota(1);
-    V[p].pedirnota(2);
-    V[p].pedirnota(3);
 
     cout << "\n     Creado correctamente\n\n";
   }
@@ -369,29 +395,39 @@ public:
     int p=buscarpos();
 
     if (p>=0){
+      if (V[p].NOTA(1)==0 && V[p].NOTA(2)==0 && V[p].NOTA(3)==0)
+      {
+        cout << "No puede modificar este estudiante porque aun no "
+          "ha introducido sus notas.\n\n";
+        return;
+      }
+
       string x=" ";
 
-      while (x != "4") {
+      while (x != "7") {
         LIMPIAR
 
         cout << "\n\n\tM E N U   D E   M O D I F I C A C I O N\n"
         "\tEstudiante " << V[p].id() <<
-        "\n\n1. Modificar nombre\t"
+        "\n\n1. Modificar nombre\t\t"
         "[Actual: " << V[p].NOMBRE() << "]\n"
-        "2. Modificar carrera\t"
+        "2. Modificar carrera\t\t"
         "[Actual: " << V[p].CARRERA() << "]\n"
-        "3. Modificar edad\t"
+        "3. Modificar edad\t\t"
         "[Actual: " << V[p].EDAD() << "]\n"
-        "4. Volver al menu principal\n\n";
+        "4. Modificar nota corte 1\t"
+        "[Actual: " << V[p].NOTA(1) << "]\n"
+        "5. Modificar nota corte 2\t"
+        "[Actual: " << V[p].NOTA(2) << "]\n"
+        "6. Modificar nota corte 3\t"
+        "[Actual: " << V[p].NOTA(3) << "]\n"
+        "7. Volver al menu principal\n\n";
 
         cout << "--Digite la opcion que desea modificar: ";
         getline(cin, x);
 
-        if (x.length()!=1) {
-          cout << "Opcion no valida\n";
-          cout << "Presione ENTER para continuar:\n"; getchar(); 
+        if (x.length()!=1)
           continue;
-        }
 
       
         int opc = x[0]-'0';
@@ -409,20 +445,66 @@ public:
           cout << "    Modificado correctamente\n\n";
           break;
         case 4:
+          V[p].pedirnota(1);
+          cout << "    Modificado correctamente\n\n";
+          break;
+        case 5:
+          V[p].pedirnota(2);
+          cout << "    Modificado correctamente\n\n";
+          break;
+        case 6:
+          V[p].pedirnota(3);
+          cout << "    Modificado correctamente\n\n";
+          break;
+        case 7:
           cout << "Volviendo al menu principal...\n";
           break;
         default:
           cout << "Opcion no valida\n";
         }
 
-        if (opc!=4) {
+        if (opc!=7) {
           cout << "Presione ENTER para continuar:\n"; getchar();   
         }
       }
     }
   }
 
+  void intronotas() {
+    int p=buscarpos();
+
+    if (p>=0){
+      cout << "Estudiante: " << V[p].NOMBRE() << "\n\n";
+      string x; int c=-1;
+      while (c==-1) {
+        cout << "En que corte desea la nota (escriba 0 para salir): "; getline(cin,x);
+        if (x.length()==1) 
+          c = x[0] - '0';
+
+        if (c >= 1 && c<=3) {
+
+          if ( V[p].NOTA(c) != 0 ) {
+            cout << "Este estudiante ya cuenta con nota para este corte. Intente con otro corte\n\n";
+            c=-1;
+          }
+          else
+            V[p].pedirnota(c);
+        }
+
+        else if (c==0)
+          break;
+        else {
+          cout << "Numero de corte no valido\n\n";
+          c=-1;
+        }
+
+      }
+    }
+  }
+
   void guardardatos() {
+
+    cout << "Guardando datos...\n";
     ofstream o("datos.csv");
 
     for (int i=0; i<tam; i++) {
@@ -458,10 +540,8 @@ int main() {
     cout << "--Digite la opcion del 1 al 7: ";
     getline(cin,x);
 
-    if (x.length()!=1) {
-      cout << "\nIntroduzca una opcion valida\n";
+    if (x.length()!=1)
       continue;
-    }
 
     cout << setw(30) << "";
 
@@ -493,6 +573,9 @@ int main() {
       L.modificar();
       break;
     case 6:
+      LIMPIAR
+      cout << "I N G R E S A R   N O T A S\n\n";
+      L.intronotas();
       break;
     case 7:
       cout << "Saliendo...\n";
