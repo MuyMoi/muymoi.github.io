@@ -1,18 +1,40 @@
+/*En este programa se usaron conceptos como clases, atributos privados y publicos,
+manipuladores de flujo para dar formato a la salida, manejo de archivos de texto,
+temporizadores, manejo de vectores dinamicos, encapsulacion y sobrecarga de
+funciones que permiten el polimorfismo. El programa presenta una breve pantalla de
+carga al comenzar su ejecucion.
+
+Para guardar los datos se usó un archivo de valores separados por comas (csv),
+que son archivos de tablas donde cada columna esta delimitada por comas y
+cada registro es una linea del archivo. Cuando el programa se ejecuta, comienza
+leyendo este archivo y extrayendo los datos, y en caso de haber algun registro
+con un ID no valido se presenta una advertencia y se ignora dicho registro. Para
+buscar las comas delimitadoras, se usaron los metodos find() y substr() en el
+string de la linea leida. Al final del programa, cuando el usuario elige salir,
+se guardan todos los cambios.
+*/
+
 #include <iostream>
-#include <ctype.h>
-#include <iomanip>
-#include <fstream>
-#include <thread>
-#include <chrono>
+#include <ctype.h> //comprobar si un string es numerico
+#include <iomanip> //manipulador de flujo o de formato
+#include <fstream> //archivos
+#include <thread> //para usar un temporizador
+#include <chrono> //para usar un temporizador
 using namespace std;
 
-#define LIMPIAR system("cls")
+//algunas macros
+//en la macro LIMPIAR, el comando es "clear" si se trata de Linux o MacOS,
+//y "cls" si es Windows
+#define LIMPIAR system("clear")
 #define ESPERAR(tiempo) this_thread::sleep_for(tiempo)
+
+//constantes de ancho de tablas
 #define a1 10
 #define a2 31
 #define a3 6
 #define a4 3
 #define ANCHO a1+2*a2+4*a3+a4
+
 class Estudiante {
 private:
   string ID;
@@ -24,6 +46,7 @@ private:
 public:
   Estudiante() : ID(""), nombre(""), carrera(""), edad(0) {}
 
+  //metodos que retornan los valores de los atributos privados
   string id() { return ID; }
   string NOMBRE() { return nombre; }
   string CARRERA() { return carrera; }
@@ -32,12 +55,16 @@ public:
   float def() { return notas[0]*0.3 + notas[1]*0.35 + notas[2]*0.35; }
 
   void mostrar() {
+    //para obligar a imprimir 1 solo decimal y justificar a la izquierda
     cout << fixed << setprecision(1) << left;
-    
+
+
+    //si el nombre es muy largo, partirlo en dos lineas
+
     int tam=nombre.length();
-    int pos;
+    int pos;       //posicion hasta donde se copiará el nombre en la primera linea
     if (tam>30)
-      pos=nombre.find(" ", 17);
+      pos=nombre.find(" ", 17); //partir por el primer espacio despues de la mitad
     else
       pos=tam;
     
@@ -45,11 +72,14 @@ public:
     << edad << setw(a3) << notas[0] << setw(a3) << notas[1] << setw(a3) << notas[2]
     << setw(a4) << def() << endl;
     
+    //si es muy largo, imprimo la segunda linea
     if (tam>30) {
       cout << setw(10) << "";
       cout << nombre.substr(pos) << endl;
     }
   }
+
+  //metodos de asignacion y validacion
 
   bool asgnrID(string s) {
     int tam=s.length(); //tamaño
@@ -59,7 +89,6 @@ public:
       cout << "No puede dejar vacio el campo ID\n\n";
       return false;
     }
-
     for (int i=1; i<tam; i++)
       if (!isdigit( s[i]) ) {
         num=false;
@@ -70,15 +99,18 @@ public:
       return false;
     }
 
+    //si nada salio mal, lo asigno
     ID=s;
     ID[0] = 'T';
     return true;
   }
+
   bool asgnrnombre(string s) {
     if (s.length() == 0) {
       cout << "No puede dejar el campo nombre vacio\n\n";
       return false;
     }
+    //no permito comas porque dañaria el formato de almacenamiento
     if (s.find(",") != -1) {
       cout << "No puede introducir comas\n\n";
       return false;
@@ -86,6 +118,7 @@ public:
     nombre=s;
     return true;
   }
+
   bool asgnrcarrera(string s) {
     if (s.length() == 0) {
       cout << "No puede dejar el campo carrera vacio\n\n";
@@ -102,8 +135,11 @@ public:
     carrera=s;
     return true;
   }
+
+  //sobrecargo las siguientes funciones para cuando reciben un valor
+  //numerico o uno string
   bool asgnredad(int n) {
-    if (n <= 1 or n >= 130) { //asumiré estos limites
+    if (n <= 5 or n >= 130) { //asumiré estos limites
       cout << "Edad no valida\n\n";
       return false;
     }
@@ -124,6 +160,7 @@ public:
     }
     return asgnredad(n);
   }
+
   bool asgnrnota(float n, int c){
     if (n ==0)
       return false;
@@ -148,6 +185,9 @@ public:
     }
     return asgnrnota(n,c);
   }
+
+  //para pedir los datos usando las validaciones anteriores
+
   void pedirnombre() {
     cout << "Digitar nombre: ";
     string s; getline(cin, s);
@@ -159,7 +199,6 @@ public:
   void pedirID() {
     cout << "Digitar ID (de la forma T12345678): ";
     string s; getline(cin, s);
-
     if (!asgnrID(s)) {
       pedirID();
       return;
@@ -193,7 +232,6 @@ public:
       pedirnota(c);
       return;
     }
-    
     if (!asgnrnota(s,c)) {
       pedirnota(c);
       return;
@@ -201,23 +239,26 @@ public:
   }
 };
 
+//clase que maneja una lista de estudiantes
 class ListaEst {
 private:
   Estudiante *V;
   int tam;
 
-  void encabezado() {
+  //estas funciones son solo de uso interno
+
+  void encabezado() { //encabezado de tabla de datos
     cout << left;
     cout << setw(a1) << "Codigo" << setw(a2) << "Nombre" << setw(a2) << "Carrera" << setw(a3)
     << "Edad" << setw(a3) << "N1" << setw(a3) << "N2" << setw(a3) << "N3"
     << setw(a4) << "DEF" << endl;
   }
 
-  void guiones() {
+  void guiones() { //guiones para separar registros de alumnos
     cout << setfill('_') << setw(ANCHO) << "" << endl << setfill(' ');
   }
 
-  void redimensionar(int n) {
+  void redimensionar(int n) { //aumentar n veces el tamaño del vector. no reduce
     if (n<=0) return;
 
     Estudiante *aux= new Estudiante[tam+n];
@@ -229,10 +270,10 @@ private:
     tam += n;
   }
 
-  int buscarpos() { //retorna la posicion del ID buscado
+  int buscarpos() { //pide y retorna la posicion del ID buscado
     if (tam==0) {
       cout << "\tNo hay ningun estudiante\n\n";
-      return -2;
+      return -2; //retorna codigo de error
     }
     string codigo;
     cout << "Escriba el codigo a buscar: ";
@@ -242,10 +283,10 @@ private:
     if (r==-1)
       cout << "\tNo se encontraron coincidencias\n";
  
-    return r;
+    return r; //retorna el resultado de la busqueda
   }
 
-  int buscarpos(string codigo) {
+  int buscarpos(string codigo) { //retorna codigos de error si no se encuentra
     if (codigo.length()==9 && codigo[0]=='t')
       codigo[0]='T';
 
@@ -260,37 +301,38 @@ private:
   }
 
 public:
-  int TAM() {
-    return tam;
-  }
+  int TAM() { return tam; } //devuelve el tamaño
 
   ListaEst(int t) {
     tam=t;
     V=new Estudiante[tam];
   }
 
+  //leer los datos de un archivo
   void cargarDatos() {
     ifstream a("datos.csv");
     string x;
     int i=0;
 
-    while (getline(a,x)) {
+    while (getline(a,x)) { //se lee linea por linea
       redimensionar(1);
       string codigo;
-      int p1,p2,p3,p4,p5,p6,p7;
+      int p1,p2,p3,p4,p5,p6,p7; //posiciones de las comas separadoras
 
-      p1=x.find(',');
-      codigo = x.substr(0,p1);
+      p1=x.find(','); //se busca la primera coma
+      codigo = x.substr(0,p1);  //se selecciona el primer pedazo
       cout << "Leyendo datos del estudiante con codigo " << codigo << "\n";
+      ESPERAR(300ms);
 
-      if (buscarpos(codigo)>=0) {
-        cout << "Advertencia: codigo " << codigo << " repetido. Se procede a ignorar\n";
+      if (buscarpos(codigo)>=0) { //codigo repetido
+        cout << "Advertencia: codigo " << codigo << " repetido. Se procede a ignorar\n\n";
         tam--;
         ESPERAR(2000ms);
         continue;
       }
 
-      if (  V[i].asgnrID(codigo)  ) {
+      //si se asigno el codigo correctamente, se asignan los demas datos:
+      if (  V[i].asgnrID(codigo)  ) { 
         p2 = x.find(',',p1+1);
         V[i].asgnrnombre(x.substr(p1+1,p2-p1-1));
         
@@ -312,18 +354,19 @@ public:
         i++;
       }
       else {
-        cout << "Advertencia: codigo " << codigo << " no valido. Se procede a ignorar\n";
-        tam--;
-        ESPERAR(2000ms);
+        cout << "Advertencia: codigo " << codigo << " no valido. Se procede a ignorar\n\n";
+        tam--; //se reduce el tamaño, pues el metodo redimensionar lo habia aumentado
+        ESPERAR(1000ms);
       }
-      ESPERAR(300ms);
     }
-    
-    cout << "Datos cargados\n";
-    cout << "Cargando interfaz del programa..";
-    ESPERAR(800ms);
+    LIMPIAR;
+    cout << "Datos cargados\nCargando interfaz del programa..";
+    cout << "\n";
     a.close();
+    ESPERAR(1000ms);
   }
+
+  //metodos para usarse en el programa principal
 
   void crear() {
     redimensionar(1);
@@ -356,7 +399,7 @@ public:
 
   void mostrar(){
     if (tam==0) {
-      cout << "   No hay ningun estudiante\n\n";
+      cout << "\tNo hay ningun estudiante\n\n";
       return;
     }
     
@@ -503,7 +546,7 @@ public:
         if (c >= 1 && c<=3) {
 
           if ( V[p].NOTA(c) != 0 ) {
-            cout << "Este estudiante ya cuenta con nota para este corte. Intente con otro corte\n\n";
+            cout << "Este estudiante ya cuenta con nota para este corte. Intente con otro corte o en el menu modificar\n\n";
             c=-1;
           }
           else
@@ -599,7 +642,6 @@ int main() {
       break;
     default:
       cout << "\nIntroduzca una opcion valida\n";
-
     }
 
     if (opc != 7) {
