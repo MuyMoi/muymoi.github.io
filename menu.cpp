@@ -106,7 +106,8 @@ public:
   }
 
   bool asgnrnombre(string s) {
-    if (s.length() == 0) {
+    int tam=s.length();
+    if (tam == 0) {
       cout << "No puede dejar el campo nombre vacio\n\n";
       return false;
     }
@@ -114,6 +115,13 @@ public:
     if (s.find(",") != -1) {
       cout << "No puede introducir comas\n\n";
       return false;
+    }
+    //tampoco permito numeros
+    for (int i=0; i < tam; i++) {
+      if (isdigit(s[i])) {
+        cout << "No se permiten numeros en el nombre\n\n";
+        return false;
+      }
     }
     nombre=s;
     return true;
@@ -147,9 +155,16 @@ public:
     return true;
   }
   bool asgnredad(string x) {
-    if (x.length() == 0) {
+    int tam = x.length();
+    if (tam == 0) {
       cout << "No puede dejar el campo edad vacio\n\n";
       return false;
+    }
+    for (int i=0; i<tam; i++) {
+      if (!isdigit(x[i])) {
+        cout << "Edad no valida\n\n";
+        return false;
+      }
     }
     int n;
     try {
@@ -164,6 +179,20 @@ public:
   bool asgnrnota(float n, int c){
     if (n ==0)
       return false;
+
+    /*if (c > 1) {
+      if (NOTA(1) == 0) {
+        cout << "No puede introducir la note del corte " << c
+             << " porque no ha introducido la del corte 1\n\n";
+        return false;
+      }
+      if (c==3 && NOTA(2)==0) {
+        cout << "No puede introducir la note del corte " << c
+             << " porque no ha introducido la del corte 2\n\n";
+        return false;
+      }
+    }*/
+
     if (n < 0.5 or n > 5) {
       cout << "Nota no valida\n\n";
       return false;
@@ -172,9 +201,19 @@ public:
     return true;
   }
   bool asgnrnota(string x, int c){
-    if (x.length() == 0) {
+    
+
+    int tam = x.length();
+    if (tam == 0) {
       cout << "Nota vacia\n\n";
       return false;
+    }
+    //ARREGLAR: QUE SOLO SE PERMITA UN PUNTO DECIMAL. ES DECIR, SER ESTRICTO CON EL FORMATO
+    for (int i=0; i<tam; i++) {
+      if (!isdigit(x[i]) && x[i]!= '.') {
+        cout << "Nota no valida\n\n";
+        return false;
+      }
     }
     float n;
     try {
@@ -457,10 +496,10 @@ public:
     int p=buscarpos();
 
     if (p>=0){
-      if (V[p].NOTA(1)==0 || V[p].NOTA(2)==0 || V[p].NOTA(3)==0)
+      if (V[p].NOTA(1)==0)
       {
         cout << "No puede modificar este estudiante porque aun no "
-          "ha introducido todas sus notas.\n\n";
+          "ha introducido ninguna nota.\n\n";
         return;
       }
 
