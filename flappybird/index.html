@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Flappy Bird</title>
+	<style>
+body {
+	margin: 0px;
+	overflow: hidden;
+	background: linear-gradient(180deg,rgba(0, 146, 250, 1) 0%, rgba(87, 160, 199, 1) 30%, rgba(83, 229, 237, 1) 100%);
+	background-size: 100%;
+	-webkit-user-select: none;
+  	user-select: none;
+}
+img {
+	position: absolute;
+}
+div {
+	position: absolute;
+}
+	</style>
+</head>
+
+<body>
+<div>
+	<button id="comenzar" tabindex=-1>Comenzar</button>
+	<button id="pausar_reanudar" tabindex=-1>Pausar</button>
+	<br>
+	<p></p>
+</div>
+</body>
+
+<script src="Bird.js"></script>
+<script src="PardeTubos.js"></script>
+
+<script type="text/javascript">
+
+class Juego {
+	//soundtrack;
+	soundcolision;
+	soundpunto;
+	pajaro = new Bird;
+	estapausado;
+	listatubos = []; //mas exactamente, lista de pares de tubos
+	puntos;
+	sumado;
+
+	constructor() {
+		document.onkeydown = (e)=> {
+			if (e.code == "Space" && !this.estapausado)
+				this.pajaro.saltar();
+		}
+		document.ontouchstart = (e)=> {
+        	e.preventDefault();
+        	if (e.target.tagName != "BUTTON" && !this.estapausado) {
+        		this.pajaro.saltar();
+        	}
+      	}
+		
+		this.estapausado = true;
+		this.puntos = 0;
+		this.p_elem = document.createElement("p");
+		this.p_elem.style.position = "absolute";
+		this.p_elem.style.left = "50%";
+		
+		document.body.appendChild(this.p_elem);
+		document.body.style["background-size"] = `auto ${innerHeight}px`;
+
+		//this.soundtrack = document.createElement("audio");
+		this.soundcolision = document.createElement("audio");
+		this.soundpunto = document.createElement("audio");
+
+		//this.soundtrack.loop = true;
+		//this.soundtrack.src = "Music.ogx";
+		this.soundcolision.src = "colision.mp3";
+		this.soundpunto.src = "punto.mp3";
+
+		
+	}
+
+	iniciar() {
+		for (let t of this.listatubos) {
+			t.destructor();
+			this.listatubos.push();
+		}
+		this.estapausado = false;
+		this.puntos = 0;
+		this.p_elem.innerHTML = this.puntos;
+		this.sumado = false;
+		
+		this.pajaro.setpos(window.innerWidth/4, window.innerHeight/2)
+		this.pajaro.debesaltar = false;
+		this.pajaro.debecaer = true;
+		this.pajaro.vel = 1;
+		this.pajaro.caer();
+
+		this.listatubos[0] = new PardeTubos;
+		this.listatubos[0].init();
+		this.comprobarcolision();
+	}
+
+	pausar() {
+		this.estapausado = true;
+		this.pajaro.pausar();
+		this.listatubos[0].pausar();
+	}
+
+	reanudar() {
+		this.estapausado = false;
+		this.pajaro.reanudar();
+		this.listatubos[0].reanudar();
+		this.comprobarcolision();
+	}
+
+	gameover() {
+		this.pausar();
+		this.pajaro.ensalto = false;
+		this.pajaro.encaida = false;
+		this.soundcolision.currentTime = 0;
+		this.soundcolision.play();
+		//this.soundtrack.pause();
+	}
+
+	sumar() {
+		this.puntos++;
+		this.p_elem.innerHTML = this.puntos;
+	}
+
+	comprobarcolision() {
+		// coordenadas del pajaro
+		let xp = this.pajaro.x;
+		let yp = this.pajaro.y;
+		// dimensiones del pajaro
+		let ap = this.pajaro.width;
+		let lp = this.pajaro.height;
+		// coordenadas del par de tubos mas proximo
+		let xt = this.listatubos[0].x;
+		let y1 = this.listatubos[0].y1;
+		let y2 = this.listatubos[0].y2;
+		// dimensiones de los tubos
+		let at = this.listatubos[0].width;
+
+		if (xp > xt+at) {		//si supera exitosamente los tubos
+			if (!this.sumado) { //siempre que no se haya sumado aun
+				this.sumar();
+				this.soundpunto.play();
+				this.sumado = true;
+			}
+		}
+		else if (!(xp+ap-10 < xt || xp+10 > xt+at) 
+			&& !(yp+5 >= y1 && yp+lp-5 <= y2)) {
+				this.gameover();
+				return;
+		}
+
+		if (xt < -at) {		//equivalente a xt+at < 0
+			this.listatubos[0].destructor();
+			this.listatubos.shift();
+			this.listatubos.push(new PardeTubos);
+			this.listatubos[0].init();
+			this.sumado = false;
+			//setTimeout(()=> this.sumado = false, 100);
+		}
+
+		if (yp+lp > window.innerHeight || yp < 0) {
+			this.gameover();
+			return;
+		}
+
+		if (!this.estapausado)
+			window.requestAnimationFrame( ()=> this.comprobarcolision());
+	}
+}
+
+
+let j = new Juego;
+
+//boton comenzar
+const bc = document.querySelector("#comenzar");
+bc.onclick = ()=> {
+	bc.innerHTML = "Reiniciar";
+	j.iniciar();
+	bc.blur();
+}
+
+//bc.ontouchstart = null;
+
+//boton pausar y reanudar
+const bpr = document.querySelector("#pausar_reanudar");
+bpr.onclick = ()=> {
+	if ("Pausar" == bpr.innerHTML) {
+		j.pausar();
+		bpr.innerHTML = "Reanudar";
+	} else {
+		j.reanudar();
+		bpr.innerHTML = "Pausar";
+	}
+	bpr.blur();
+}
+
+//bpr.ontouchstart = null;
+
+let p= j.pajaro 
+let l = j.listatubos;
+
+//document.onkeydown = p.saltar; // esto es muy incorrecto, pues el this
+//definido en la clase no esta fuertemente asociado a esta; es decir, que 
+//al asignar directamente la funcion al evento, JS interpreta que el this
+//hace ahora referencia a document y no al objeto pajaro. Pesima caracteristica.
+
+
+</script>
+</html>
