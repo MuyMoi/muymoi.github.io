@@ -4,6 +4,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Flappy Bird</title>
+	<link rel="stylesheet" type="text/css" href="Cuadro.css">
 	<style>
 body {
 	margin: 0px;
@@ -11,28 +12,18 @@ body {
 	background: linear-gradient(180deg,rgba(0, 146, 250, 1) 0%, rgba(87, 160, 199, 1) 30%, rgba(83, 229, 237, 1) 100%);
 	background-size: 100%;
 	-webkit-user-select: none;
-  	user-select: none;
-}
-img {
-	position: absolute;
-}
-div {
-	position: absolute;
+	user-select: none;
 }
 	</style>
 </head>
 
 <body>
-<div>
-	<button id="comenzar" tabindex=-1>Comenzar</button>
-	<button id="pausar_reanudar" tabindex=-1>Pausar</button>
-	<br>
-	<p></p>
-</div>
+
 </body>
 
 <script src="Bird.js"></script>
 <script src="PardeTubos.js"></script>
+<script src="Cuadro.js"></script>
 
 <script type="text/javascript">
 
@@ -45,27 +36,20 @@ class Juego {
 	listatubos = []; //mas exactamente, lista de pares de tubos
 	puntos;
 	sumado;
+	gameover;
+	p_elem;
+	//btn_pausa;
+	//btn_reinicio;
 
 	constructor() {
-		document.onkeydown = (e)=> {
-			if (e.code == "Space" && !this.estapausado)
-				this.pajaro.saltar();
-		}
-		document.ontouchstart = (e)=> {
-        	e.preventDefault();
-        	if (e.target.tagName != "BUTTON" && !this.estapausado) {
-        		this.pajaro.saltar();
-        	}
-      	}
-		
+		this.asignareventos();
+		this.crearBotonInicio();
+		this.crearCuadroPuntos();
+
+		document.body.style["background-size"] = `auto ${innerHeight}px`;
+
 		this.estapausado = true;
 		this.puntos = 0;
-		this.p_elem = document.createElement("p");
-		this.p_elem.style.position = "absolute";
-		this.p_elem.style.left = "50%";
-		
-		document.body.appendChild(this.p_elem);
-		document.body.style["background-size"] = `auto ${innerHeight}px`;
 
 		//this.soundtrack = document.createElement("audio");
 		this.soundcolision = document.createElement("audio");
@@ -73,10 +57,12 @@ class Juego {
 
 		//this.soundtrack.loop = true;
 		//this.soundtrack.src = "Music.ogx";
-		this.soundcolision.src = "colision.mp3";
-		this.soundpunto.src = "punto.mp3";
+		this.soundcolision.src = "music/colision.mp3";
+		this.soundpunto.src = "music/punto.mp3";
 
-		
+		let alturapajaro = Math.ceil(window.innerHeight*0.05);
+		this.pajaro.setaltura(alturapajaro);
+		this.pajaro.ocultar();
 	}
 
 	iniciar() {
@@ -84,37 +70,141 @@ class Juego {
 			t.destructor();
 			this.listatubos.push();
 		}
+		if (!this.estapausado)
+			this.pausar(); //solo para detener cualquier animacion
+
+		this.gameover = false;
 		this.estapausado = false;
 		this.puntos = 0;
 		this.p_elem.innerHTML = this.puntos;
 		this.sumado = false;
 		
-		this.pajaro.setpos(window.innerWidth/4, window.innerHeight/2)
-		this.pajaro.debesaltar = false;
-		this.pajaro.debecaer = true;
+		this.pajaro.setpos(window.innerWidth/6, window.innerHeight/2)
+		this.pajaro.mostrar();
+		//this.pajaro.debesaltar = false;
+		//this.pajaro.debecaer = true;
 		this.pajaro.vel = 1;
 		this.pajaro.caer();
 
-		this.listatubos[0] = new PardeTubos;
-		this.listatubos[0].init();
-		this.comprobarcolision();
+		this.listatubos[0] = new PardeTubos(this.pajaro.width, 5*this.pajaro.height);
+		this.reproduciranim();
+	}
+
+	asignareventos() {
+		document.onkeydown = (e)=> {
+			if (e.code == "Space" && !this.estapausado)
+				this.pajaro.saltar();
+		}
+		document.ontouchstart = (e)=> {
+    		e.preventDefault();
+    		if (e.target.tagName != "BUTTON" && !this.estapausado) {
+    			this.pajaro.saltar();
+    		}
+  		}
+	}
+
+	crearBotonInicio() {
+		let ancho, alto;
+		ancho = alto = (100/650) * window.innerHeight;
+
+	    let menu = new Cuadro("inicio", ancho,alto, true);
+	    menu.setatributo("background-color", "rgb(70, 120, 150)");
+	    menu.setatributo("border", "20px solid rgb(70, 120, 150)");
+
+		let btn_inicio = menu.crearBoton("", "click", ()=> {
+			this.iniciar();
+			this.crearBotones();
+			menu.cerrar()}
+		);
+		btn_inicio.style.background = `url("images/play.svg")`;
+		menu.mostrar();
+	}
+
+	crearCuadroPuntos() {
+		let pts = new Cuadro("puntos", 20, 40);
+		pts.setpos(window.innerWidth/2 - 15, 10);
+		pts.setatributo("overflow-y", "hidden");
+		this.p_elem = pts.crearElemento("span", "0");
+		pts.mostrar();
+	}
+
+	crearBotones() {
+		let play = "images/play.svg";
+		let pause = "images/pause.svg";
+		let rein = "images/reiniciar.svg"
+
+		let ancho, alto;
+		ancho = alto = (50/650) * window.innerHeight;
+
+		let pc = new Cuadro("pausa_continuar", ancho,alto);
+		pc.setpos(10,10);
+		pc.setatributo("background-color", "rgb(70, 120, 150)");
+    	pc.setatributo("border", "20px solid rgb(70, 120, 150)");
+		pc.mostrar();
+
+		let r = new Cuadro("reinicio", ancho,alto);
+		r.setpos(window.innerWidth-ancho-60, 10);
+		r.setatributo("background-color", "rgb(70, 120, 150)");
+    	r.setatributo("border", "20px solid rgb(70, 120, 150)");
+		r.mostrar();
+
+		//las siguientes funciones DEBEN ser lambda para que no
+		//haya problemas con el this
+		let pausar_continuar = () => {
+			if (this.estapausado && !this.gameover) {
+				this.reanudar();
+				btn_pc.style.background = `url("${pause}")`;
+				btn_pc.blur();
+			}
+			else {
+				this.pausar();
+				btn_pc.style.background = `url("${play}")`;
+				btn_pc.blur();
+			}
+		}
+		
+		let reiniciar = () => {
+			if (this.estapausado) {
+				btn_pc.style.background = `url("${pause}")`;
+			}
+			this.iniciar();
+			btn_r.blur();
+		}
+
+
+		const btn_pc = pc.crearBoton("", "click", pausar_continuar);
+		btn_pc.ontouchstart = ()=> {
+			btn_pc.onclick = null;
+			pausar_continuar();
+		}
+		btn_pc.style.background = `url("${pause}")`;
+
+		const btn_r = r.crearBoton("", "click", reiniciar);
+		btn_r.ontouchstart = ()=> {
+			btn_r.onclick = null;
+			reiniciar();
+		}
+		btn_r.style.background = `url("${rein}")`;
+
 	}
 
 	pausar() {
 		this.estapausado = true;
+		window.cancelAnimationFrame(this.animid);
 		this.pajaro.pausar();
-		this.listatubos[0].pausar();
+	//	this.listatubos[0].pausar();
 	}
 
 	reanudar() {
 		this.estapausado = false;
 		this.pajaro.reanudar();
-		this.listatubos[0].reanudar();
-		this.comprobarcolision();
+	//	this.listatubos[0].reanudar();
+		this.reproduciranim();
 	}
 
-	gameover() {
+	perder() {
 		this.pausar();
+		this.gameover = true;
 		this.pajaro.ensalto = false;
 		this.pajaro.encaida = false;
 		this.soundcolision.currentTime = 0;
@@ -128,6 +218,9 @@ class Juego {
 	}
 
 	comprobarcolision() {
+		//return true: hay colision
+		//return false: no hay colision
+
 		// coordenadas del pajaro
 		let xp = this.pajaro.x;
 		let yp = this.pajaro.y;
@@ -150,44 +243,52 @@ class Juego {
 		}
 		else if (!(xp+ap-10 < xt || xp+10 > xt+at) 
 			&& !(yp+5 >= y1 && yp+lp-5 <= y2)) {
-				this.gameover();
-				return;
+				this.perder();
+				return true;
 		}
 
 		if (xt < -at) {		//equivalente a xt+at < 0
 			this.listatubos[0].destructor();
 			this.listatubos.shift();
-			this.listatubos.push(new PardeTubos);
-			this.listatubos[0].init();
+			this.listatubos.push(new PardeTubos(ap, 5*lp));
+			this.listatubos[0].setancho(this.pajaro.width);
 			this.sumado = false;
 			//setTimeout(()=> this.sumado = false, 100);
 		}
 
 		if (yp+lp > window.innerHeight || yp < 0) {
-			this.gameover();
-			return;
+			this.perder();
+			return true;
 		}
 
-		if (!this.estapausado)
-			window.requestAnimationFrame( ()=> this.comprobarcolision());
-	}
-}
+		return false;
 
+		//if (!this.estapausado)
+		//	window.requestAnimationFrame( ()=> this.comprobarcolision());
+	}
+	reproduciranim() {
+		this.listatubos[0].mover();
+		if ( !this.comprobarcolision() )
+			this.animid = window.requestAnimationFrame( ()=> this.reproduciranim());
+	}
+
+
+}
 
 let j = new Juego;
 
 //boton comenzar
-const bc = document.querySelector("#comenzar");
+/*const bc = document.querySelector("#comenzar");
 bc.onclick = ()=> {
 	bc.innerHTML = "Reiniciar";
 	j.iniciar();
 	bc.blur();
-}
+}*/
 
 //bc.ontouchstart = null;
 
 //boton pausar y reanudar
-const bpr = document.querySelector("#pausar_reanudar");
+/*const bpr = document.querySelector("#pausar_reanudar");
 bpr.onclick = ()=> {
 	if ("Pausar" == bpr.innerHTML) {
 		j.pausar();
@@ -197,7 +298,7 @@ bpr.onclick = ()=> {
 		bpr.innerHTML = "Pausar";
 	}
 	bpr.blur();
-}
+}*/
 
 //bpr.ontouchstart = null;
 

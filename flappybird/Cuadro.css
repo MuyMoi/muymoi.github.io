@@ -1,0 +1,16 @@
+.cajas {
+  background-color: white;
+  border: 5px solid white;
+  position: absolute;
+  text-align: center;
+  overflow-y: auto;
+  padding: 0px;
+  z-index: 1;
+}
+
+.cajas button {
+  background-size: auto;
+  border: none;
+  width: 100%;
+  height: 100%;
+}

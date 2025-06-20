@@ -1,20 +1,22 @@
 class Bird {
 	x; //normalmente no se modifica
 	y;
-	debecaer;
-	debesaltar;
 	encaida;
 	ensalto;
 	vel;
-	width = 50;
-	height = 33;
+	width;
+	height;
+	animid;
+	velf_caida;
+	velf_salto;
+	veli_caida;
+	veli_salto;
 
 	constructor() {
 		this.element = document.createElement("img");
-		this.element.src = "flappy1.svg";
-		this.element.width = this.width + "";
-		this.element.height = this.height + "";
-		this.vel = 1;
+		this.element.src = "images/flappy1.svg";
+		this.element.style.position = "absolute";
+		this.element.draggable = false;
 
 		document.body.appendChild(this.element);
 
@@ -43,8 +45,7 @@ class Bird {
 	}*/
 
 	pausar() {
-		this.debesaltar = false;
-		this.debecaer = false;
+		window.cancelAnimationFrame(this.animid);
 	}
 
 	reanudar() {
@@ -63,6 +64,28 @@ class Bird {
 	}
 	posicionarY() {
 		this.element.style.transform = `translateY(${this.y}px)`;
+	}
+
+	setaltura(h) {
+		//this.width = w;
+		let w = h*1.51
+		this.height = h;
+		this.width = w;
+		this.element.height = h + "";
+		this.element.width = w + "";
+
+		this.velf_caida = 0.3 * h;
+		this.velf_salto = 0.03 * h;
+		this.veli_caida = 0.03 * h;
+		this.veli_salto = 0.3 * h;
+	}
+
+	mostrar() {
+		this.element.hidden = false;
+	}
+
+	ocultar() {
+		this.element.hidden = true;
 	}
 
 	setpos(_x, _y) {
@@ -89,32 +112,30 @@ class Bird {
 	}
 
 	animcaer() {
-		// rotar en una proporcion 5 veces la velocidad
-		this.moverY(this.vel, this.vel*5);
-		if (this.vel < 10)
+		let angulo = (this.vel/this.velf_caida) * 50
+		this.moverY(this.vel, angulo);
+
+		if (this.vel < this.velf_caida)
 			this.vel *= 1.125;
 
-		if (this.debecaer)
-			window.requestAnimationFrame( ()=> this.animcaer() )
+		this.animid = window.requestAnimationFrame( ()=> this.animcaer() )
 
 	}
 
 	caer() {
-		this.debesaltar = false;
-		this.ensalto = false;
-		if ( !this.encaida ) {  //si no hay un proceso de caida activo
-			this.vel = 1;
-			this.debecaer = true;
-			this.encaida = true;
-			this.animcaer();
-		}
+		this.pausar();
 
+		this.vel = this.veli_caida;
+		this.encaida = true;
+		this.ensalto = false;
+		this.animcaer();
 	}
 
 	animsaltar() {		//animacion de saltar
-		this.moverY(-this.vel, -this.vel*5);
-		
-		if (this.vel >= 1) {
+		let angulo = (this.vel/this.veli_salto) * 50;
+		this.moverY(-this.vel, -angulo);
+
+		if (this.vel >= this.velf_salto) {
 			this.vel *= 0.9;
 		}
 		else {
@@ -122,19 +143,15 @@ class Bird {
 			return;
 		}
 
-		if (this.debesaltar)
-			window.requestAnimationFrame( ()=> this.animsaltar() )
+		this.animid = window.requestAnimationFrame( ()=> this.animsaltar() )
 	}
 
 	saltar() {
-		this.vel = 12;
-		this.debecaer = false;
+		this.pausar();
+
+		this.vel = this.veli_salto;
+		this.ensalto = true;
 		this.encaida = false;
-		
-		if ( !this.ensalto ) {  //si no hay un proceso de salto activo
-			this.ensalto = true;
-			this.debesaltar = true;
-			this.animsaltar();
-		}
+		this.animsaltar();
 	}
 }
