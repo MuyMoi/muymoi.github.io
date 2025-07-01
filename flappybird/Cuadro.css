@@ -1,16 +1,24 @@
 .cajas {
-  background-color: white;
-  border: 5px solid white;
+  background-color: darkblue;
+  /*background-color: rgb(70, 120, 150);*/
+  border: none;
   position: absolute;
   text-align: center;
-  overflow-y: auto;
+  overflow-y: hidden;
   padding: 0px;
   z-index: 1;
 }
 
+
 .cajas button {
-  background-size: auto;
+  background-size: 60%;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  background-position: center;
+  /*border-color: rgb(70, 120, 150);
+  border-style: solid;*/
   border: none;
   width: 100%;
   height: 100%;
+  overflow-y: hidden;
 }

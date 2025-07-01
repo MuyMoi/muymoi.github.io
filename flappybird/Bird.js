@@ -1,6 +1,10 @@
+"use strict"
+
 class Bird {
 	x; //normalmente no se modifica
 	y;
+  element;
+	enpausa;
 	encaida;
 	ensalto;
 	vel;
@@ -17,8 +21,10 @@ class Bird {
 		this.element.src = "images/flappy1.svg";
 		this.element.style.position = "absolute";
 		this.element.draggable = false;
+    this.element.oncontextmenu = (e)=> e.preventDefault();
+		this.enpausa = false;
 
-		document.body.appendChild(this.element);
+		document.getElementById('main').appendChild(this.element);
 
 		//this.promise = new Promise();
 	}
@@ -44,18 +50,24 @@ class Bird {
 		}
 	}*/
 
-	pausar() {
+	cancelar_anim() {
 		window.cancelAnimationFrame(this.animid);
 	}
 
+	pausar() {
+		this.enpausa = true;
+		this.cancelar_anim();
+	}
+
 	reanudar() {
-		if (this.ensalto) {
-			this.debesaltar = true;
-			this.animsaltar();
-		}
-		if (this.encaida) {
-			this.debecaer = true;
-			this.animcaer();
+		if (this.enpausa) {
+			this.enpausa = false;
+			if (this.ensalto) {
+				this.animsaltar();
+			}
+			else if (this.encaida) {
+				this.animcaer();
+			}
 		}
 	}
 
@@ -67,7 +79,6 @@ class Bird {
 	}
 
 	setaltura(h) {
-		//this.width = w;
 		let w = h*1.51
 		this.height = h;
 		this.width = w;
@@ -76,8 +87,10 @@ class Bird {
 
 		this.velf_caida = 0.3 * h;
 		this.velf_salto = 0.03 * h;
+		//this.velf_salto = 0;
 		this.veli_caida = 0.03 * h;
-		this.veli_salto = 0.3 * h;
+		this.veli_salto = 0.4 * h;
+		//this.veli_salto = 0.4 * h;
 	}
 
 	mostrar() {
@@ -115,43 +128,51 @@ class Bird {
 		let angulo = (this.vel/this.velf_caida) * 50
 		this.moverY(this.vel, angulo);
 
+		
 		if (this.vel < this.velf_caida)
-			this.vel *= 1.125;
+			this.vel *= 1.2;
+			//this.vel += 1;
 
 		this.animid = window.requestAnimationFrame( ()=> this.animcaer() )
 
 	}
 
 	caer() {
-		this.pausar();
-
+		this.cancelar_anim();
 		this.vel = this.veli_caida;
-		this.encaida = true;
-		this.ensalto = false;
-		this.animcaer();
+
+
+		if (!this.enpausa) {
+			this.encaida = true;
+			this.ensalto = false;
+			this.animcaer();
+		}
 	}
 
 	animsaltar() {		//animacion de saltar
 		let angulo = (this.vel/this.veli_salto) * 50;
 		this.moverY(-this.vel, -angulo);
 
-		if (this.vel >= this.velf_salto) {
-			this.vel *= 0.9;
+		if (this.vel > this.velf_salto) {
+			this.vel *= 0.85;
+			//this.vel -= 1;
 		}
 		else {
-			this.caer();
+			this.caer()
 			return;
 		}
 
-		this.animid = window.requestAnimationFrame( ()=> this.animsaltar() )
+		this.animid = window.requestAnimationFrame( ()=> this.animsaltar() );
 	}
 
 	saltar() {
-		this.pausar();
-
+		this.cancelar_anim();
 		this.vel = this.veli_salto;
-		this.ensalto = true;
-		this.encaida = false;
-		this.animsaltar();
+
+		if (!this.enpausa) {
+			this.ensalto = true;
+			this.encaida = false;
+			this.animsaltar();
+		}
 	}
 }

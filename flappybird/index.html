@@ -5,20 +5,30 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Flappy Bird</title>
 	<link rel="stylesheet" type="text/css" href="Cuadro.css">
-	<style>
+<style>
+
 body {
 	margin: 0px;
 	overflow: hidden;
+	
+}
+
+#main {
 	background: linear-gradient(180deg,rgba(0, 146, 250, 1) 0%, rgba(87, 160, 199, 1) 30%, rgba(83, 229, 237, 1) 100%);
-	background-size: 100%;
+	background-repeat: no-repeat;
+	overflow: hidden;
 	-webkit-user-select: none;
 	user-select: none;
+	position: absolute;
 }
-	</style>
+
+
+</style>
+
 </head>
 
 <body>
-
+	<div id="main"></div>
 </body>
 
 <script src="Bird.js"></script>
@@ -26,6 +36,8 @@ body {
 <script src="Cuadro.js"></script>
 
 <script type="text/javascript">
+
+let pa = document.querySelector("p");
 
 class Juego {
 	//soundtrack;
@@ -37,19 +49,17 @@ class Juego {
 	puntos;
 	sumado;
 	gameover;
-	p_elem;
-	//btn_pausa;
-	//btn_reinicio;
+	puntos_elem;
+	proporcPantalla; // relacion alto sobre ancho
+	distTubos;
+  muted;
 
 	constructor() {
-		this.asignareventos();
-		this.crearBotonInicio();
 		this.crearCuadroPuntos();
-
-		document.body.style["background-size"] = `auto ${innerHeight}px`;
 
 		this.estapausado = true;
 		this.puntos = 0;
+    this.muted = false;
 
 		//this.soundtrack = document.createElement("audio");
 		this.soundcolision = document.createElement("audio");
@@ -60,145 +70,152 @@ class Juego {
 		this.soundcolision.src = "music/colision.mp3";
 		this.soundpunto.src = "music/punto.mp3";
 
-		let alturapajaro = Math.ceil(window.innerHeight*0.05);
-		this.pajaro.setaltura(alturapajaro);
+		this.ajustartamanos();
 		this.pajaro.ocultar();
 	}
 
 	iniciar() {
-		for (let t of this.listatubos) {
-			t.destructor();
-			this.listatubos.push();
-		}
-		if (!this.estapausado)
-			this.pausar(); //solo para detener cualquier animacion
+		this.cancelaranim();
 
 		this.gameover = false;
 		this.estapausado = false;
 		this.puntos = 0;
-		this.p_elem.innerHTML = this.puntos;
+		this.puntos_elem.innerHTML = this.puntos;
 		this.sumado = false;
 		
-		this.pajaro.setpos(window.innerWidth/6, window.innerHeight/2)
+		this.pajaro.reanudar();
+		if (this.proporcPantalla > 0.9) {
+			this.pajaro.setpos(5, window.innerHeight/2)
+		} else {
+			this.pajaro.setpos(0.3*innerHeight, window.innerHeight/2)
+		}
 		this.pajaro.mostrar();
-		//this.pajaro.debesaltar = false;
-		//this.pajaro.debecaer = true;
-		this.pajaro.vel = 1;
 		this.pajaro.caer();
 
-		this.listatubos[0] = new PardeTubos(this.pajaro.width, 5*this.pajaro.height);
+		for (let t of this.listatubos)
+			t.destructor();
+		this.listatubos.length = 0;
+		this.calcularNumTubos();
+
+
+		this.tanterior = window.performance.now()
 		this.reproduciranim();
 	}
 
-	asignareventos() {
-		document.onkeydown = (e)=> {
-			if (e.code == "Space" && !this.estapausado)
-				this.pajaro.saltar();
+	
+
+	/*	-------------------------------------- /
+		Tamaño de pantalla y elementos
+	/	-------------------------------------- */
+
+	calcProporcPantalla() {
+		this.proporcPantalla = window.innerHeight / window.innerWidth;
+	}
+
+	ajustartamanos() {
+    this.calcProporcPantalla();
+
+		let main = document.getElementById("main");
+		main.style.width = `${window.innerWidth}px`;
+		main.style.height = `${window.innerHeight}px`;
+    
+    let pt = Math.ceil((18/650) * window.innerHeight);
+    this.puntos_elem.style.fontSize = pt + "pt";
+
+
+		let alturapajaro = Math.ceil(window.innerHeight*0.05);
+		this.pajaro.setaltura(alturapajaro);
+
+		for (let t of this.listatubos) {
+			t.setdimensiones(this.pajaro.width);
 		}
-		document.ontouchstart = (e)=> {
-    		e.preventDefault();
-    		if (e.target.tagName != "BUTTON" && !this.estapausado) {
-    			this.pajaro.saltar();
-    		}
-  		}
 	}
 
-	crearBotonInicio() {
-		let ancho, alto;
-		ancho = alto = (100/650) * window.innerHeight;
+	/*	-------------------------------------- /
+		Funciones de los tubos
+	/	-------------------------------------- */
 
-	    let menu = new Cuadro("inicio", ancho,alto, true);
-	    menu.setatributo("background-color", "rgb(70, 120, 150)");
-	    menu.setatributo("border", "20px solid rgb(70, 120, 150)");
+	posicionarUltimoTubo() {
+		let l = this.listatubos.length;
+		let x;
 
-		let btn_inicio = menu.crearBoton("", "click", ()=> {
-			this.iniciar();
-			this.crearBotones();
-			menu.cerrar()}
-		);
-		btn_inicio.style.background = `url("images/play.svg")`;
-		menu.mostrar();
-	}
+		if (l == 0)
+			return;
 
-	crearCuadroPuntos() {
-		let pts = new Cuadro("puntos", 20, 40);
-		pts.setpos(window.innerWidth/2 - 15, 10);
-		pts.setatributo("overflow-y", "hidden");
-		this.p_elem = pts.crearElemento("span", "0");
-		pts.mostrar();
-	}
-
-	crearBotones() {
-		let play = "images/play.svg";
-		let pause = "images/pause.svg";
-		let rein = "images/reiniciar.svg"
-
-		let ancho, alto;
-		ancho = alto = (50/650) * window.innerHeight;
-
-		let pc = new Cuadro("pausa_continuar", ancho,alto);
-		pc.setpos(10,10);
-		pc.setatributo("background-color", "rgb(70, 120, 150)");
-    	pc.setatributo("border", "20px solid rgb(70, 120, 150)");
-		pc.mostrar();
-
-		let r = new Cuadro("reinicio", ancho,alto);
-		r.setpos(window.innerWidth-ancho-60, 10);
-		r.setatributo("background-color", "rgb(70, 120, 150)");
-    	r.setatributo("border", "20px solid rgb(70, 120, 150)");
-		r.mostrar();
-
-		//las siguientes funciones DEBEN ser lambda para que no
-		//haya problemas con el this
-		let pausar_continuar = () => {
-			if (this.estapausado && !this.gameover) {
-				this.reanudar();
-				btn_pc.style.background = `url("${pause}")`;
-				btn_pc.blur();
-			}
-			else {
-				this.pausar();
-				btn_pc.style.background = `url("${play}")`;
-				btn_pc.blur();
-			}
-		}
+		if (l > 1)
+			x = this.listatubos[l-2].x + this.distTubos;
+		else if (l == 1)
+			x = this.distTubos + this.pajaro.x + 100;
 		
-		let reiniciar = () => {
-			if (this.estapausado) {
-				btn_pc.style.background = `url("${pause}")`;
-			}
-			this.iniciar();
-			btn_r.blur();
+		this.listatubos[l-1].setposX(x);
+	}
+
+	crearParTubos() {
+		this.listatubos.push(new PardeTubos(this.pajaro.width, 4.5*this.pajaro.height));
+		this.posicionarUltimoTubo();
+	}
+
+	calcularNumTubos() {
+		//a continuacion se calcula la cantidad de pares de tubos
+		//que caben en la pantalla a la vez
+		//Para ello, se considerara que la distancia entre ellos
+		//debe ser el 50% del alto de la ventana
+
+		this.distTubos = 0.5*window.innerHeight;
+		let num = Math.ceil(window.innerWidth / this.distTubos);
+
+		for (let i = 1; i <= num; i++) {
+			this.crearParTubos();
 		}
+	}
 
 
-		const btn_pc = pc.crearBoton("", "click", pausar_continuar);
-		btn_pc.ontouchstart = ()=> {
-			btn_pc.onclick = null;
-			pausar_continuar();
-		}
-		btn_pc.style.background = `url("${pause}")`;
+	/*	-------------------------------------- /
+		Eventos de teclado y tactiles para saltar
+	/	-------------------------------------- */
 
-		const btn_r = r.crearBoton("", "click", reiniciar);
-		btn_r.ontouchstart = ()=> {
-			btn_r.onclick = null;
-			reiniciar();
-		}
-		btn_r.style.background = `url("${rein}")`;
 
+	/*	-------------------------------------- /
+		Botones y cuadro de puntos
+	/	-------------------------------------- */
+
+  crearCuadroPuntos() {
+    let pts = new Cuadro("puntos", "unset", "unset", true);
+    pts.setpos("50%", "5%");
+    pts.setatributo("color", "white");
+    pts.setatributo("padding", "0 5%")
+    this.puntos_elem = pts.crearElemento("span", "0");
+    
+    this.puntos_elem.style.fontFamily = "monospace";
+    
+    pts.mostrar();
+  }	
+
+	/*	-------------------------------------- /
+		Control del juego
+	/	-------------------------------------- */
+  
+  desactivarsonido() {
+    this.muted = true;
+  }
+  
+  activarsonido() {
+    this.muted = false;
+  }
+
+	cancelaranim() {
+		window.cancelAnimationFrame(this.animid);
+		this.pajaro.pausar();
 	}
 
 	pausar() {
 		this.estapausado = true;
-		window.cancelAnimationFrame(this.animid);
-		this.pajaro.pausar();
-	//	this.listatubos[0].pausar();
+		this.cancelaranim();
 	}
 
 	reanudar() {
 		this.estapausado = false;
 		this.pajaro.reanudar();
-	//	this.listatubos[0].reanudar();
 		this.reproduciranim();
 	}
 
@@ -208,13 +225,14 @@ class Juego {
 		this.pajaro.ensalto = false;
 		this.pajaro.encaida = false;
 		this.soundcolision.currentTime = 0;
-		this.soundcolision.play();
+    if (!this.muted)
+      this.soundcolision.play();
 		//this.soundtrack.pause();
 	}
 
 	sumar() {
 		this.puntos++;
-		this.p_elem.innerHTML = this.puntos;
+		this.puntos_elem.innerHTML = this.puntos;
 	}
 
 	comprobarcolision() {
@@ -233,27 +251,31 @@ class Juego {
 		let y2 = this.listatubos[0].y2;
 		// dimensiones de los tubos
 		let at = this.listatubos[0].width;
+    //tolerancia de colision
+    let tol = Math.ceil((10/50) * ap)
 
-		if (xp > xt+at) {		//si supera exitosamente los tubos
+		if (xp > xt+at) {		  //si supera exitosamente los tubos
 			if (!this.sumado) { //siempre que no se haya sumado aun
 				this.sumar();
-				this.soundpunto.play();
+				if (!this.muted)
+          this.soundpunto.play();
 				this.sumado = true;
 			}
 		}
-		else if (!(xp+ap-10 < xt || xp+10 > xt+at) 
-			&& !(yp+5 >= y1 && yp+lp-5 <= y2)) {
+		else if (!(xp+ap-tol < xt || xp+tol > xt+at) 
+			&& !( yp+(tol/2) >= y1 && yp+lp-(tol/2) <= y2) ) {
 				this.perder();
 				return true;
 		}
 
 		if (xt < -at) {		//equivalente a xt+at < 0
-			this.listatubos[0].destructor();
-			this.listatubos.shift();
-			this.listatubos.push(new PardeTubos(ap, 5*lp));
-			this.listatubos[0].setancho(this.pajaro.width);
+			let l = this.listatubos.length;
+			let tubo = this.listatubos.shift();
+			
+			this.listatubos.push(tubo);
+			this.posicionarUltimoTubo();
+			this.listatubos[l-1].setposAleatY();
 			this.sumado = false;
-			//setTimeout(()=> this.sumado = false, 100);
 		}
 
 		if (yp+lp > window.innerHeight || yp < 0) {
@@ -262,54 +284,163 @@ class Juego {
 		}
 
 		return false;
-
-		//if (!this.estapausado)
-		//	window.requestAnimationFrame( ()=> this.comprobarcolision());
 	}
-	reproduciranim() {
-		this.listatubos[0].mover();
+	reproduciranim(t) {
+		/*let fps=Math.round(1000/(t - this.tanterior));
+		this.puntos_elem.innerHTML = fps + "fps"
+		this.tanterior = t;*/
+		/*if (fps < 50) {
+			this.pausar()
+			return
+		}*/
+
+		//	quitar lo anterior 				//
+
+		for (t of this.listatubos) {
+			t.mover();
+		}
+
 		if ( !this.comprobarcolision() )
-			this.animid = window.requestAnimationFrame( ()=> this.reproduciranim());
+			this.animid = window.requestAnimationFrame( (t)=> this.reproduciranim(t));
 	}
 
 
 }
 
-let j = new Juego;
 
-//boton comenzar
-/*const bc = document.querySelector("#comenzar");
-bc.onclick = ()=> {
-	bc.innerHTML = "Reiniciar";
-	j.iniciar();
-	bc.blur();
-}*/
+let j=new Juego;
 
-//bc.ontouchstart = null;
+//A continuacion viene la configuracion de menus
+//y botones para controlar la logica del juego
 
-//boton pausar y reanudar
-/*const bpr = document.querySelector("#pausar_reanudar");
-bpr.onclick = ()=> {
-	if ("Pausar" == bpr.innerHTML) {
-		j.pausar();
-		bpr.innerHTML = "Reanudar";
-	} else {
-		j.reanudar();
-		bpr.innerHTML = "Pausar";
-	}
-	bpr.blur();
-}*/
 
-//bpr.ontouchstart = null;
+let play = "images/play.svg";
+let pause = "images/pause.svg";
+let rein = "images/reiniciar.svg";
 
-let p= j.pajaro 
-let l = j.listatubos;
+let cuadro_in, btn_inicio;
+let cuadro_pc, btn_pc;
+let cuadro_r, brn_r;
+
+let calcTam1 = ()=> (200/650) * window.innerHeight;
+//se ajusta con base en el alto o en el ancho, el que sea menor
+let calcTam2 = ()=> {
+  if (j.proporcPantalla > 1) //ancho menor que el alto
+    return (100/650) * window.innerWidth;
+  else                       //alto menor o igual que el ancho
+    return (100/650) * window.innerHeight;
+}
+
+//creacion y configuracion de los cuadros
+
+let t1 = calcTam1(), t2 = calcTam2();
+
+cuadro_in = new Cuadro("inicio", t1,t1, true);
+cuadro_pc = new Cuadro("pausa_continuar", t2,t2);
+cuadro_r = new Cuadro("reinicio", t2,t2);
+
+cuadro_in.mostrar();
+
+cuadro_pc.setpos(20,10);
+
+cuadro_r.setpos("unset", 10);
+cuadro_r.setatributo("right", "20px")
+
+//funciones que realizan las acciones
+
+let iniciar = () => {
+  j.iniciar();
+  cuadro_in.cerrar();
+  cuadro_pc.mostrar();
+  cuadro_r.mostrar();
+  
+  //activo los eventos de teclado, incluyendo el salto
+  
+  document.onkeydown = (e)=> {
+    if (e.code == "KeyP")
+      pausar_continuar();
+    else if (e.code == "KeyR")
+      reiniciar();
+    else if (e.code == "Space" && !j.estapausado)
+      j.pajaro.saltar();
+  }
+  
+  document.ontouchstart = (e)=> {
+    e.preventDefault();
+    if (e.target.tagName != "BUTTON" && !j.estapausado) {
+      j.pajaro.saltar();
+    }
+  }
+}
+
+let pausar_continuar = () => {
+  if (j.estapausado && !j.gameover) {
+    j.reanudar();
+    btn_pc.style.backgroundImage = `url("${pause}")`;
+    btn_pc.blur();
+  }
+  else {
+    j.pausar();
+    btn_pc.style.backgroundImage = `url("${play}")`;
+    btn_pc.blur();
+  }
+}
+
+let reiniciar = () => {
+  if (j.estapausado) {
+    btn_pc.style.backgroundImage = `url("${pause}")`;
+  }
+  j.iniciar();
+  btn_r.blur();
+}
+
+//creacion y configuracion de los botones
+
+btn_inicio = cuadro_in.crearBoton("", "click", iniciar);
+btn_pc = cuadro_pc.crearBoton("", "click", pausar_continuar);
+btn_r = cuadro_r.crearBoton("", "click", reiniciar);
+
+btn_inicio.style.backgroundImage = `url("images/play.svg")`;
+btn_pc.style.backgroundImage = `url("${pause}")`;
+btn_r.style.backgroundImage = `url("${rein}")`;
+
+//asigno eventos tactiles y onresize
+btn_pc.ontouchstart = ()=> {
+  btn_pc.onclick = null;
+  pausar_continuar();
+}
+
+btn_r.ontouchstart = ()=> {
+  btn_r.onclick = null;
+  reiniciar();
+}
+
+window.onresize = ()=> {
+  j.ajustartamanos();
+  
+  let t = calcTam2();
+  cuadro_pc.settam(t, t);
+  cuadro_r.settam(t,t);
+
+  /*setTimeout( ()=> alert(
+    "inner: " + innerWidth + "," + innerHeight +
+    "\nouter: " + outerWidth + "," + outerHeight +
+    "\nscreen: " + screen.width + ", " + screen.height +
+    "\ndevicepixelratio: " + devicePixelRatio
+    ), 500)*/ 
+}
+
+
+
+
+
 
 //document.onkeydown = p.saltar; // esto es muy incorrecto, pues el this
 //definido en la clase no esta fuertemente asociado a esta; es decir, que 
 //al asignar directamente la funcion al evento, JS interpreta que el this
 //hace ahora referencia a document y no al objeto pajaro. Pesima caracteristica.
-
+let p = j.pajaro 
+let l = j.listatubos;
 
 </script>
 </html>

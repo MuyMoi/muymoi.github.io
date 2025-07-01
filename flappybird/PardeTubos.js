@@ -6,22 +6,27 @@ class PardeTubos {
 	width;
 	e1 = document.createElement("img");
 	e2 = document.createElement("img");
-	animid;
 	sep;
 
 	constructor(ancho, separacion) {
 		this.e1.src = this.e2.src = "images/tubo.png";
-		this.e1.height = this.e2.height = window.innerHeight;
 		this.e1.style["position"] = this.e2.style["position"] = "absolute";
 		this.e1.draggable = this.e2.draggable = false;
-
-		this.sep = separacion;
-		this.setancho(ancho);
-		this.setdimensiones();
-
+    this.e1.oncontextmenu = this.e2.oncontextmenu = (e) => e.preventDefault();
+		this.init(ancho, separacion);
 	}
 
-	setdimensiones() {
+	setdimensiones(w) {
+		let h = window.innerHeight;
+		this.e1.height = this.e2.height = h;
+		
+		this.width = w;
+		this.e1.width = this.e2.width = w;
+
+		this.vel = w / 10;
+	}
+
+	setposAleatY() {
 		let h = window.innerHeight;
 
 		this.y2 =
@@ -29,21 +34,27 @@ class PardeTubos {
 			(window.innerHeight-this.sep*1.5)) + this.sep + 20;
 		this.y1 = this.y2 - this.sep;
 
-		this.e2.style.top = `${this.y2}px`;
 		this.e1.style.top = `${this.y1 - h}px`;
+		this.e2.style.top = `${this.y2}px`;
 
-		this.x = window.innerWidth;
-
-		this.mover();
-		document.body.appendChild(this.e1);
-		document.body.appendChild(this.e2);
 	}
 
-	setancho(w) {
-		this.width = w;
-		this.e1.width = this.e2.width = w;
+	setposX(_x) {
+		this.x = _x;
+		this.e1.style.transform = this.e2.style.transform = `translateX(${this.x}px)`;
+	}
 
-		this.vel = w / 10;
+	init(ancho, separacion) {
+		this.sep = separacion;
+
+		this.setposAleatY();
+		this.setdimensiones(ancho, separacion);
+		
+		let main = document.getElementById("main")
+		main.style.height = (window.innerHeight ) + "px"
+		main.style.width = (window.innerWidth) + "px"
+		main.appendChild(this.e1);
+		main.appendChild(this.e2);
 	}
 
 	mover() {
@@ -51,20 +62,11 @@ class PardeTubos {
 		this.e1.style.transform = this.e2.style.transform = `translateX(${this.x}px)`;
 	}
 
-	/*/pausar() {
-		window.cancelAnimationFrame(this.animid);
-	}*/
-
 	reanudar() {
 		this.mover();
 	}
 
 	destructor() {
-		//this.pausar();
-		//this.mover = () => {}; //importante: así evito que se pueda invocar
-		//el metodo mover desde afuera cuando se ejecute el destructor
-		//y evita errores donde mover se seguia ejecutando a pesar de
-		//haber hecho los atributos e1 y e2 = null
 		this.e1.remove();
 		this.e1 = null;
 		this.e2.remove();
