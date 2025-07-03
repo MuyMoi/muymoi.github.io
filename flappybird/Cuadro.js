@@ -15,6 +15,8 @@ class Cuadro {
 
     if (centrado)
       this.style.transform = "translate(-50%,-50%)";
+    
+    document.body.appendChild(this.div);
   }
   crearElemento(tipoElem, texto) {
     const elem = document.createElement(tipoElem);
@@ -42,14 +44,13 @@ class Cuadro {
     return boton;
   }
 
-  cerrar() {
+  remover() {
     this.div.remove();
   }
+  ocultar() {
+     this.div.hidden = true;
+  }
   mostrar() {
-    if (!document.querySelector(this.id)) {
-      document.body.appendChild(this.div);
-    } else {
-      this.cerrar();
-    }
+      this.div.hidden = false;
   }
 }

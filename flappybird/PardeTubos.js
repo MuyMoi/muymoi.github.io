@@ -23,7 +23,7 @@ class PardeTubos {
 		this.width = w;
 		this.e1.width = this.e2.width = w;
 
-		this.vel = w / 10;
+		this.vel = Math.ceil(w / 15);
 	}
 
 	setposAleatY() {

@@ -37,8 +37,6 @@ body {
 
 <script type="text/javascript">
 
-let pa = document.querySelector("p");
-
 class Juego {
 	//soundtrack;
 	soundcolision;
@@ -53,8 +51,10 @@ class Juego {
 	proporcPantalla; // relacion alto sobre ancho
 	distTubos;
   muted;
+  mstfps;
 
 	constructor() {
+    this.mstfps = false; //para mostrar o no los fps
 		this.crearCuadroPuntos();
 
 		this.estapausado = true;
@@ -94,15 +94,13 @@ class Juego {
 
 		for (let t of this.listatubos)
 			t.destructor();
-		this.listatubos.length = 0;
+		this.listatubos.length = 0;  //borrar todos
 		this.calcularNumTubos();
 
 
-		this.tanterior = window.performance.now()
+		this.tanterior = window.performance.now() //con fines de depuracion
 		this.reproduciranim();
 	}
-
-	
 
 	/*	-------------------------------------- /
 		Tamaño de pantalla y elementos
@@ -169,12 +167,6 @@ class Juego {
 		}
 	}
 
-
-	/*	-------------------------------------- /
-		Eventos de teclado y tactiles para saltar
-	/	-------------------------------------- */
-
-
 	/*	-------------------------------------- /
 		Botones y cuadro de puntos
 	/	-------------------------------------- */
@@ -187,8 +179,6 @@ class Juego {
     this.puntos_elem = pts.crearElemento("span", "0");
     
     this.puntos_elem.style.fontFamily = "monospace";
-    
-    pts.mostrar();
   }	
 
 	/*	-------------------------------------- /
@@ -286,15 +276,12 @@ class Juego {
 		return false;
 	}
 	reproduciranim(t) {
-		/*let fps=Math.round(1000/(t - this.tanterior));
-		this.puntos_elem.innerHTML = fps + "fps"
-		this.tanterior = t;*/
-		/*if (fps < 50) {
-			this.pausar()
-			return
-		}*/
-
-		//	quitar lo anterior 				//
+    //la siguiente condicion es con fines de depuracion
+    if (this.mstfps) {
+      let fps=Math.round(1000/(t - this.tanterior));
+      this.puntos_elem.innerHTML = fps + "fps"
+      this.tanterior = t;
+    }
 
 		for (t of this.listatubos) {
 			t.mover();
@@ -303,27 +290,30 @@ class Juego {
 		if ( !this.comprobarcolision() )
 			this.animid = window.requestAnimationFrame( (t)=> this.reproduciranim(t));
 	}
+} // FIN DE LA CLASE //
 
 
-}
 
-
-let j=new Juego;
+//creo el juego
+const j=new Juego;
 
 //A continuacion viene la configuracion de menus
 //y botones para controlar la logica del juego
 
-
 let play = "images/play.svg";
 let pause = "images/pause.svg";
 let rein = "images/reiniciar.svg";
+let activarsnd = "images/activarsnd.svg";
+let desactivarsnd = "images/desactivarsnd.svg";
 
+let cuadro_ctrl;
 let cuadro_in, btn_inicio;
 let cuadro_pc, btn_pc;
-let cuadro_r, brn_r;
+let cuadro_r, btn_r;
+let cuadro_snd, btn_snd;
 
-let calcTam1 = ()=> (200/650) * window.innerHeight;
-//se ajusta con base en el alto o en el ancho, el que sea menor
+let calcTam1 = ()=> (300/650) * window.innerHeight;
+//el siguiente se ajusta con base en el alto o en el ancho, el que sea menor
 let calcTam2 = ()=> {
   if (j.proporcPantalla > 1) //ancho menor que el alto
     return (100/650) * window.innerWidth;
@@ -335,22 +325,43 @@ let calcTam2 = ()=> {
 
 let t1 = calcTam1(), t2 = calcTam2();
 
+cuadro_ctrl = new Cuadro("controles", t1, t1, true);
 cuadro_in = new Cuadro("inicio", t1,t1, true);
 cuadro_pc = new Cuadro("pausa_continuar", t2,t2);
 cuadro_r = new Cuadro("reinicio", t2,t2);
-
-cuadro_in.mostrar();
+cuadro_snd = new Cuadro("sonido", t2,t2, true);
 
 cuadro_pc.setpos(20,10);
+cuadro_pc.ocultar();
 
-cuadro_r.setpos("unset", 10);
-cuadro_r.setatributo("right", "20px")
+cuadro_r.setpos(, 10);
+cuadro_r.setatributo("right", "20px");
+cuadro_r.ocultar();
+
+cuadro_snd.ocultar();
+
+//configuracion especial del cuadro de informacion de controles
+
+cuadro_ctrl.setpos("50%","35%");
+
+let txt = `Tecla P: Pausar<br>
+  Tecla R: Reiniciar<br>
+  Espacio o Flecha arriba: Saltar`;
+let e = cuadro_ctrl.crearElemento("p", txt);
+e.style.fontSize =  Math.ceil((18/650) * window.innerHeight) + "px";
+e.style.color = "white";
+e.onclick = ()=> {        //con fines de depuracion
+  j.mstfps = !j.mstfps;
+  alert("!Tocaste el cuadro de informacion! Conteo de FPS " +
+    (j.mstfps ? "activado." : "desactivado.") );
+};
 
 //funciones que realizan las acciones
 
 let iniciar = () => {
   j.iniciar();
-  cuadro_in.cerrar();
+  cuadro_ctrl.remover();
+  cuadro_in.remover();
   cuadro_pc.mostrar();
   cuadro_r.mostrar();
   
@@ -361,7 +372,7 @@ let iniciar = () => {
       pausar_continuar();
     else if (e.code == "KeyR")
       reiniciar();
-    else if (e.code == "Space" && !j.estapausado)
+    else if ((e.code == "Space" || e.code == "ArrowUp") && !j.estapausado)
       j.pajaro.saltar();
   }
   
@@ -378,31 +389,46 @@ let pausar_continuar = () => {
     j.reanudar();
     btn_pc.style.backgroundImage = `url("${pause}")`;
     btn_pc.blur();
+    cuadro_snd.ocultar();
   }
   else {
     j.pausar();
     btn_pc.style.backgroundImage = `url("${play}")`;
     btn_pc.blur();
+    cuadro_snd.mostrar();
   }
 }
 
 let reiniciar = () => {
-  if (j.estapausado) {
-    btn_pc.style.backgroundImage = `url("${pause}")`;
-  }
+  btn_pc.style.backgroundImage = `url("${pause}")`;
+  cuadro_snd.ocultar();
   j.iniciar();
   btn_r.blur();
 }
+
+let conf_sonido = () => {
+  if (j.muted) {
+    j.activarsonido();
+    btn_snd.style.backgroundImage = `url("${desactivarsnd}")`;
+  } else {
+    j.desactivarsonido();
+    btn_snd.style.backgroundImage = `url("${activarsnd}")`;
+  }
+  btn_snd.blur();
+}
+  
 
 //creacion y configuracion de los botones
 
 btn_inicio = cuadro_in.crearBoton("", "click", iniciar);
 btn_pc = cuadro_pc.crearBoton("", "click", pausar_continuar);
 btn_r = cuadro_r.crearBoton("", "click", reiniciar);
+btn_snd = cuadro_snd.crearBoton("", "click", conf_sonido);
 
 btn_inicio.style.backgroundImage = `url("images/play.svg")`;
 btn_pc.style.backgroundImage = `url("${pause}")`;
 btn_r.style.backgroundImage = `url("${rein}")`;
+btn_snd.style.backgroundImage = `url("${desactivarsnd}")`;
 
 //asigno eventos tactiles y onresize
 btn_pc.ontouchstart = ()=> {
