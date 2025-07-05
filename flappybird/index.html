@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1.0, user-scalable=0">
 	<title>Flappy Bird</title>
 	<link rel="stylesheet" type="text/css" href="Cuadro.css">
 <style>
@@ -10,7 +10,8 @@
 body {
 	margin: 0px;
 	overflow: hidden;
-	
+	user-select: none;
+  webkit-user-select: none;
 }
 
 #main {
@@ -20,8 +21,14 @@ body {
 	-webkit-user-select: none;
 	user-select: none;
 	position: absolute;
+  touch-action: none;
 }
 
+#tam {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+}
 
 </style>
 
@@ -29,6 +36,7 @@ body {
 
 <body>
 	<div id="main"></div>
+  <p id="tam"></p>
 </body>
 
 <script src="Bird.js"></script>
@@ -36,6 +44,8 @@ body {
 <script src="Cuadro.js"></script>
 
 <script type="text/javascript">
+
+"use strict"
 
 class Juego {
 	//soundtrack;
@@ -52,6 +62,7 @@ class Juego {
 	distTubos;
   muted;
   mstfps;
+  limfps;
 
 	constructor() {
     this.mstfps = false; //para mostrar o no los fps
@@ -281,6 +292,11 @@ class Juego {
       let fps=Math.round(1000/(t - this.tanterior));
       this.puntos_elem.innerHTML = fps + "fps"
       this.tanterior = t;
+      
+      if (fps <= j.limfps) {
+        this.pausar();
+        return;
+      }
     }
 
 		for (t of this.listatubos) {
@@ -290,30 +306,43 @@ class Juego {
 		if ( !this.comprobarcolision() )
 			this.animid = window.requestAnimationFrame( (t)=> this.reproduciranim(t));
 	}
-} // FIN DE LA CLASE //
+}
 
+//  ----- FIN DE LA CLASE ---- //
 
-
-//creo el juego
+/*	-------------------------------------- /
+	Variable donde creo el Juego
+/	-------------------------------------- */
 const j=new Juego;
 
-//A continuacion viene la configuracion de menus
-//y botones para controlar la logica del juego
 
+/*	-------------------------------------- /
+  Variables utilizadas para mostrar botones
+  para controlar la logica del juego
+/	-------------------------------------- */
+
+//direcciones de los archivos de imagen
 let play = "images/play.svg";
 let pause = "images/pause.svg";
 let rein = "images/reiniciar.svg";
 let activarsnd = "images/activarsnd.svg";
 let desactivarsnd = "images/desactivarsnd.svg";
 
-let cuadro_ctrl;
-let cuadro_in, btn_inicio;
-let cuadro_pc, btn_pc;
-let cuadro_r, btn_r;
-let cuadro_snd, btn_snd;
+//cuadros y botones (iniciar, pausar, etc)
+let cuadro_ctrl;  //mostrar info controles
+let cuadro_in, btn_inicio;  //iniciar
+let cuadro_pc, btn_pc;      //pausar o continuar
+let cuadro_r, btn_r;        //reiniciar
+let cuadro_snd, btn_snd;    //(des)activar sonido
 
+//elemento con fines de depuracion para
+//mostrar las variables de tamaño de la pantalla
+let p2= document.getElementById("tam");
+
+//tamaño de los menús. En el caso del tamaño 2, se calcula
+//dependiendo de si el ancho de la ventana es menor o mayor
+//que el alto
 let calcTam1 = ()=> (300/650) * window.innerHeight;
-//el siguiente se ajusta con base en el alto o en el ancho, el que sea menor
 let calcTam2 = ()=> {
   if (j.proporcPantalla > 1) //ancho menor que el alto
     return (100/650) * window.innerWidth;
@@ -321,7 +350,12 @@ let calcTam2 = ()=> {
     return (100/650) * window.innerHeight;
 }
 
-//creacion y configuracion de los cuadros
+/*	-------------------------------------- /
+  Creacion y configuracion de los cuadros
+  Cada cuadro posee un botón, cada uno de
+  los cuales esta configurado en una seccion
+  mas abajo
+/	-------------------------------------- */
 
 let t1 = calcTam1(), t2 = calcTam2();
 
@@ -330,6 +364,8 @@ cuadro_in = new Cuadro("inicio", t1,t1, true);
 cuadro_pc = new Cuadro("pausa_continuar", t2,t2);
 cuadro_r = new Cuadro("reinicio", t2,t2);
 cuadro_snd = new Cuadro("sonido", t2,t2, true);
+
+cuadro_in.setpos("50%", "60%");
 
 cuadro_pc.setpos(20,10);
 cuadro_pc.ocultar();
@@ -346,17 +382,51 @@ cuadro_ctrl.setpos("50%","35%");
 
 let txt = `Tecla P: Pausar<br>
   Tecla R: Reiniciar<br>
-  Espacio o Flecha arriba: Saltar`;
+  Espacio o Flecha arriba: Saltar<br>
+  En móviles, toca la pantalla para Saltar`;
 let e = cuadro_ctrl.crearElemento("p", txt);
 e.style.fontSize =  Math.ceil((18/650) * window.innerHeight) + "px";
 e.style.color = "white";
-e.onclick = ()=> {        //con fines de depuracion
+
+/*	-------------------------------------- /
+  Con fines de depuracion
+/	-------------------------------------- */
+
+//accion al hacer click en el cuadro de puntos.
+//activa un contador de FPS, activa una informacion
+//sobre el tamaño de la pantalla y, opcionalmente,
+//establece un valor de FPS que si el juego baja a
+//dicho valor, se pausa
+j.puntos_elem.onclick = ()=> {
   j.mstfps = !j.mstfps;
-  alert("!Tocaste el cuadro de informacion! Conteo de FPS " +
+  alert("!Tocaste el cuadro de puntos! Conteo de FPS " +
     (j.mstfps ? "activado." : "desactivado.") );
+
+  if (j.mstfps) {
+    mostrarInfoTam();
+    j.limfps=prompt("detener automaticamente si baja a estos fps: ");
+    j.limfps=parseInt(j.limfps);
+  } else
+    p2.innerHTML = "";
 };
 
-//funciones que realizan las acciones
+//Mostrar variables de tamaño de la pantalla
+let mostrarInfoTam = ()=> {
+  p2.innerHTML = "inner: " +
+    window.innerWidth + ", " + window.innerHeight +
+    "<br>Outer: " +
+    window.outerWidth + ", " + window.outerHeight +
+    "<br>screen: " +
+    screen.width + ", " + screen.height +
+    "<br>devicepixelratio: " +
+    window.devicePixelRatio;
+}
+
+
+/*	-------------------------------------- /
+  Funciones para iniciar, reiniciar, pausar
+  o reanudar, asociadas a los botones
+/	-------------------------------------- */
 
 let iniciar = () => {
   j.iniciar();
@@ -366,7 +436,7 @@ let iniciar = () => {
   cuadro_r.mostrar();
   
   //activo los eventos de teclado, incluyendo el salto
-  
+  //del pajaro
   document.onkeydown = (e)=> {
     if (e.code == "KeyP")
       pausar_continuar();
@@ -376,6 +446,7 @@ let iniciar = () => {
       j.pajaro.saltar();
   }
   
+  //activo el evento tactil para hacer saltar al pajaro
   document.ontouchstart = (e)=> {
     e.preventDefault();
     if (e.target.tagName != "BUTTON" && !j.estapausado) {
@@ -388,15 +459,21 @@ let pausar_continuar = () => {
   if (j.estapausado && !j.gameover) {
     j.reanudar();
     btn_pc.style.backgroundImage = `url("${pause}")`;
-    btn_pc.blur();
     cuadro_snd.ocultar();
   }
   else {
     j.pausar();
     btn_pc.style.backgroundImage = `url("${play}")`;
-    btn_pc.blur();
     cuadro_snd.mostrar();
   }
+  
+  //la siguiente funcion la utilizo para quitar el
+  //foco sobre el boton. De lo contrario, al haber
+  //hecho click y presionar la tecla Espacio para
+  //saltar, es como si se volviera a hacer click
+  //sobre el boton y no permite jugar.
+  //Tambien utilizo la funcion en las otras funciones.
+  btn_pc.blur();
 }
 
 let reiniciar = () => {
@@ -417,20 +494,36 @@ let conf_sonido = () => {
   btn_snd.blur();
 }
   
-
-//creacion y configuracion de los botones
+/*	-------------------------------------- /
+  Creacion y configuracion de los botones.
+  Se les asocia la funcion correspondiente
+  al hacer click
+/	-------------------------------------- */
 
 btn_inicio = cuadro_in.crearBoton("", "click", iniciar);
 btn_pc = cuadro_pc.crearBoton("", "click", pausar_continuar);
 btn_r = cuadro_r.crearBoton("", "click", reiniciar);
 btn_snd = cuadro_snd.crearBoton("", "click", conf_sonido);
 
+//Icono de cada boton
 btn_inicio.style.backgroundImage = `url("images/play.svg")`;
 btn_pc.style.backgroundImage = `url("${pause}")`;
 btn_r.style.backgroundImage = `url("${rein}")`;
 btn_snd.style.backgroundImage = `url("${desactivarsnd}")`;
 
-//asigno eventos tactiles y onresize
+
+/*	-------------------------------------- /
+  Asignacion de otros eventos
+/	-------------------------------------- */
+
+//Para mayor rapidez al presionar los botones en
+//pantallas tactiles, les asigno eventos touch,
+//que responden mucho más rapido que un simple
+//evento click. Sin embargo, debo hacer este ultimo
+//igual a null, para desactivarlo y evitar que Se
+//active dos veces, primero con el touch y luego con
+//el click
+
 btn_pc.ontouchstart = ()=> {
   btn_pc.onclick = null;
   pausar_continuar();
@@ -442,31 +535,26 @@ btn_r.ontouchstart = ()=> {
 }
 
 window.onresize = ()=> {
+  j.pausar();
+  
+  //En Android, para evitar que se descuadren
+  //innerHeight e innerWidth, debo reducir
+  //el tamaño del main a 0 antes de llamar
+  //a j.ajustartamaños
+  let main = document.getElementById("main");
+  main.style.width = `0px`;
+  main.style.height = `0px`;
+  
   j.ajustartamanos();
   
   let t = calcTam2();
   cuadro_pc.settam(t, t);
   cuadro_r.settam(t,t);
-
-  /*setTimeout( ()=> alert(
-    "inner: " + innerWidth + "," + innerHeight +
-    "\nouter: " + outerWidth + "," + outerHeight +
-    "\nscreen: " + screen.width + ", " + screen.height +
-    "\ndevicepixelratio: " + devicePixelRatio
-    ), 500)*/ 
+  
+  if (j.mstfps)
+    mostrarInfoTam();
+  
 }
-
-
-
-
-
-
-//document.onkeydown = p.saltar; // esto es muy incorrecto, pues el this
-//definido en la clase no esta fuertemente asociado a esta; es decir, que 
-//al asignar directamente la funcion al evento, JS interpreta que el this
-//hace ahora referencia a document y no al objeto pajaro. Pesima caracteristica.
-let p = j.pajaro 
-let l = j.listatubos;
 
 </script>
 </html>
