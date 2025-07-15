@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Consola</title>
+<style>
+	
+body {
+	display: flex;
+	flex-direction: column;
+}
+
+#contenedor_resultados {
+	margin-bottom: 6px;
+	overflow: scroll;
+}
+
+
+
+div.resultado {
+	font-family: monospace;
+	padding: 10px;
+	white-space: pre;
+	background-color: lightgray;
+	margin-bottom: 10px;
+	overflow-x: scroll;
+}
+
+p.codigo {
+	font-style: italic;
+	color: black;
+}
+
+p.error {
+	margin-left: 30px;
+	color: brown;
+}
+
+p.result {
+	margin-left: 30px;
+	color: blue;
+}
+
+table.tabla_result {
+	margin-left: 30px;
+	color: blue;
+}
+
+/*p.resultado {
+	margin-top: 0;
+	font-family: monospace;
+	color: brown;
+	padding-left: 20px;
+	padding-right: 20px;
+	border-bottom: 3px solid yellowgreen;
+}*/
+
+#codigo {
+	background-color: white;
+	position: absolute;
+	bottom: 0;
+	min-height: 90px;
+	width: 95%;
+	border-top: 6px solid gray;
+	padding-bottom: 20px;
+	display: flex;
+	flex-direction: row;
+}
+
+#codigo textarea {
+	flex: 1;
+}
+
+/*@media (height: 360px) {
+	#resultados {
+		height: 250px;
+	}
+	#codigo {
+		height: 90px;
+	}
+}
+*/
+
+</style>
+
+</head>
+
+<body>
+
+<div id="contenedor_resultados"></div>
+<div id="codigo">
+	<textarea id="text" placeholder="Escribe aqui"></textarea>
+	<button id="exec">Ejecutar</button>
+</div>
+
+</body>
+
+<script>
+
+alert("Usa el metodo escribir(texto) como reemplazo "
+	+ "de console.log()")
+
+let texto = document.getElementById('text'),
+    exec = document.getElementById('exec'),
+    res = document.getElementById('contenedor_resultados')
+
+res.style.height = innerHeight - 150 + "px"
+
+function escribir(variable, clase) {
+
+	if (typeof variable == "object") {
+		let t = agregar_tabla_result(),
+		    props = Object.getOwnPropertyNames(variable)
+		
+		t.createCaption().innerHTML += "<b>Numero de propiedades:" + 
+			props.length + "</b>"
+
+		for (let p of props) {
+			let valor = variable[p],
+			    fila = t.insertRow(),
+			    cel1 = fila.insertCell(),
+			    cel2 = fila.insertCell()
+
+			cel1.innerHTML = p + ":"
+
+			if (typeof valor == "string") {
+				cel2.innerHTML += `"${valor}"`
+			} else if (typeof valor == "function") {
+				cel2.innerHTML += "function" 
+			} else {
+				cel2.innerHTML += `${valor}`
+			}
+		}
+	} else {
+		let p = agregar_parrafo_result(clase)
+		if (typeof variable == "string" && clase != "error") {
+			p.innerHTML += `"${variable}"`
+		} else {
+			p.innerHTML += variable
+		}
+	}
+
+	return ""
+}
+
+exec.onclick = ()=> {
+	if (texto.value == "")
+		return
+
+	agregar_div_result()
+
+	let p = agregar_parrafo_result("codigo")
+	let retorno
+
+	p.innerText = texto.value
+
+	try {
+		retorno = eval?.(texto.value)
+		escribir(retorno, "result")
+	} catch (e) {
+		escribir("<b>" + e.name + ":</b> " + e.message, "error")
+	}
+
+	res.scrollBy({
+		left: 0,
+		top: 100,
+		behavior: "smooth"
+	})
+
+}
+
+function agregar_div_result() {
+	let d = document.createElement("div")
+	d.className = "resultado"
+	res.appendChild(d)
+}
+
+function agregar_parrafo_result(tipo) {
+	let p = document.createElement("p")
+	p.className = tipo
+	res.lastChild.appendChild(p)
+
+	return p
+}
+
+function agregar_tabla_result() {
+	let t = document.createElement("table")
+	t.className = "tabla_result"
+	res.lastChild.appendChild(t)
+
+	return t
+}
+
+</script>
+
+</html>
