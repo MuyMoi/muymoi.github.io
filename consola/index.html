@@ -5,18 +5,31 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Consola</title>
 <style>
-	
+
+/*  Para que el body tenga la altura maxima */
+
+html, body {
+	height: 100%;
+	margin: 0;
+}
+
+/*  Configuracion flexbox  */
 body {
 	display: flex;
 	flex-direction: column;
 }
 
 #contenedor_resultados {
-	margin-bottom: 6px;
-	overflow: scroll;
+	flex: 1;
 }
 
+/* -------------------------*/
 
+
+#contenedor_resultados {
+	margin: 0 10px; /*top-bottom  left-right*/
+	overflow: scroll;
+}
 
 div.resultado {
 	font-family: monospace;
@@ -29,58 +42,54 @@ div.resultado {
 
 p.codigo {
 	font-style: italic;
-	color: black;
+	color: darkgreen;
+	border-bottom: 1px solid darkgreen;
 }
 
 p.error {
-	margin-left: 30px;
+	margin-left: 20px;
 	color: brown;
 }
 
-p.result {
-	margin-left: 30px;
+p.result_eval {
+	margin-left: 20px;
 	color: blue;
+}
+
+p.normal {
+	margin-left: 20px;
+	color: black;
 }
 
 table.tabla_result {
-	margin-left: 30px;
+	margin-left: 20px;
 	color: blue;
 }
 
-/*p.resultado {
-	margin-top: 0;
-	font-family: monospace;
-	color: brown;
-	padding-left: 20px;
-	padding-right: 20px;
-	border-bottom: 3px solid yellowgreen;
-}*/
+/* --------------------  */
 
+/* El siguiente tiene configuracion grid */
 #codigo {
+	margin: auto;
 	background-color: white;
-	position: absolute;
-	bottom: 0;
 	min-height: 90px;
 	width: 95%;
 	border-top: 6px solid gray;
 	padding-bottom: 20px;
-	display: flex;
-	flex-direction: row;
+	display: grid;
+	grid-template-columns: auto 4em;
 }
 
 #codigo textarea {
-	flex: 1;
+	resize: vertical;
+	grid-row: 1 / span 2;
+	/*
+	lo anterior es lo mismo que:
+	
+	grid-row-start: 1;
+  	grid-row-end: 2;
+  	*/
 }
-
-/*@media (height: 360px) {
-	#resultados {
-		height: 250px;
-	}
-	#codigo {
-		height: 90px;
-	}
-}
-*/
 
 </style>
 
@@ -90,24 +99,30 @@ table.tabla_result {
 
 <div id="contenedor_resultados"></div>
 <div id="codigo">
-	<textarea id="text" placeholder="Escribe aqui"></textarea>
+	<textarea id="text" placeholder="Escribe aqui tu codigo JavaScript"></textarea>
 	<button id="exec">Ejecutar</button>
+	<button id="clear">Limpiar</button>
 </div>
-
-</body>
 
 <script>
 
-alert("Usa el metodo escribir(texto) como reemplazo "
-	+ "de console.log()")
+alert("Esta es una consola JavaScript, imitacion de "
+	+ "las consolas que proveen los navegadores con F12.\n"
+	+ "Usa el metodo escribir(texto).\n"
+	+ "Toca un comando del historial para editarlo.")
 
 let texto = document.getElementById('text'),
     exec = document.getElementById('exec'),
+    clear = document.getElementById('clear'),
     res = document.getElementById('contenedor_resultados')
 
-res.style.height = innerHeight - 150 + "px"
 
-function escribir(variable, clase) {
+function escribir(variable, tipo="normal") {
+	//El argumento tipo puede ser:
+	//normal:
+	//result_eval: lo que devuelve eval
+	//error: para mensajes de error
+	//codigo: para el codigo que ejecuto el usuario
 
 	if (typeof variable == "object") {
 		let t = agregar_tabla_result(),
@@ -133,8 +148,8 @@ function escribir(variable, clase) {
 			}
 		}
 	} else {
-		let p = agregar_parrafo_result(clase)
-		if (typeof variable == "string" && clase != "error") {
+		let p = agregar_parrafo_result(tipo)
+		if (typeof variable == "string" && tipo != "error") {
 			p.innerHTML += `"${variable}"`
 		} else {
 			p.innerHTML += variable
@@ -157,7 +172,7 @@ exec.onclick = ()=> {
 
 	try {
 		retorno = eval?.(texto.value)
-		escribir(retorno, "result")
+		escribir(retorno, "result_eval")
 	} catch (e) {
 		escribir("<b>" + e.name + ":</b> " + e.message, "error")
 	}
@@ -167,7 +182,20 @@ exec.onclick = ()=> {
 		top: 100,
 		behavior: "smooth"
 	})
+}
 
+clear.onclick = (e)=> {
+	res.innerHTML = ""
+}
+
+res.onclick = (e)=> {
+	let elem = e.target
+
+	if (elem.tagName == "P") {
+		texto.value = elem.parentElement.firstChild.innerText
+	} else if (elem.className == "resultado") {
+		texto.value = elem.firstChild.innerText
+	}
 }
 
 function agregar_div_result() {
@@ -177,6 +205,8 @@ function agregar_div_result() {
 }
 
 function agregar_parrafo_result(tipo) {
+	//El argumento tipo admite lo mismo
+	//que en la funcion escribir
 	let p = document.createElement("p")
 	p.className = tipo
 	res.lastChild.appendChild(p)
@@ -193,5 +223,7 @@ function agregar_tabla_result() {
 }
 
 </script>
+
+</body>
 
 </html>
