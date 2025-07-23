@@ -99,7 +99,9 @@ table.tabla_result {
 
 <div id="contenedor_resultados"></div>
 <div id="codigo">
-	<textarea id="text" placeholder="Escribe aqui tu codigo JavaScript"></textarea>
+	<textarea id="text"
+		placeholder="Escribe aqui tu codigo JavaScript"
+		autocapitalize="off"></textarea>
 	<button id="exec">Ejecutar</button>
 	<button id="clear">Limpiar</button>
 </div>
@@ -124,7 +126,7 @@ function escribir(variable, tipo="normal") {
 	//error: para mensajes de error
 	//codigo: para el codigo que ejecuto el usuario
 
-	if (typeof variable == "object") {
+	if (typeof variable == "object" && variable != null) {
 		let t = agregar_tabla_result(),
 		    props = Object.getOwnPropertyNames(variable)
 		
@@ -156,7 +158,7 @@ function escribir(variable, tipo="normal") {
 		}
 	}
 
-	return ""
+	return "Fin escribir"
 }
 
 exec.onclick = ()=> {
