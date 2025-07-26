@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Tabla</title>
+  <style>
+  
+  body {
+    margin: 0;
+  }
+
+  #horario {
+    border: 2px solid gray;
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+    font-family: sans-serif;
+  }
+
+  #horario th, #horario td {
+    border: 2px solid gray;
+    padding: 0;
+    text-align: center;
+    height: 2.5lh;
+    font-size: 0.8em;
+    white-space: pre-line;
+  }
+
+  #horario th {
+    background-color: aqua;
+  }
+
+  #horario th:first-child {
+    width: 5ch;
+  }
+
+  #horario caption {
+    font-size: 20pt;
+    font-family: serif;
+    margin-bottom: 5px;
+  }
+  
+  .materia1 {
+    background-color: orange;
+  }
+  .materia1::before {
+    content: "Ingles V\a\a Andrea Carolina Beltran Martinez";
+  }
+  
+  .materia2 {
+    background-color: lightblue;
+  }
+  .materia2::before {
+    content: "Fisica calor y ondas\a\a Alberto Patiño Vanegas";
+  }
+  
+  .materia2_lab {
+    background-color: #bbf;
+  }
+  .materia2_lab::before {
+    content: "Fisica LABORATORIO\a\a Gabriel Andres Hoyos Gomez Casseres";
+  }
+  
+  .materia3 {
+    background-color: greenyellow;
+  }
+  .materia3::before {
+    content: "Ecuaciones diferenciales\a\a John Beiro Moreno Barrios";
+  }
+  
+  .materia4 {
+    background-color: yellow;
+  }
+  .materia4::before {
+    content: "Estructura de datos\a\a Rafael Enrique Monterroza Barrios";
+  }
+  
+  .materia5 {
+    background-color: #ff8dff;
+    white
+  }
+  .materia5::before {
+    content: "Matematica discreta\a\a Maria Fernanda Medina Reyes";
+  }
+  
+  .materia6 {
+    background-color: wheat;
+  }
+  .materia6::before {
+    content: "Desarrollo de software\a\a Jairo Enrique Serrano Castañeda";
+  }
+  
+  @media (max-width: 520px) {
+    body {
+      font-size: 3vw;
+    }
+  }
+  
+  @media (min-width: 800px) {
+    body {
+      margin: 0 3%;
+    }
+  }
+  
+  </style>
+</head>
+<body>
+
+<table id="horario">
+ <caption>Horario de clases</caption>
+ <thead>
+   <tr>
+    <th><span> \ Dia</span>
+        <span>Hora</span>
+    </th>
+    <th>Lunes</th>
+    <th>Martes</th>
+    <th>Miercoles</th>
+    <th>Jueves</th>
+    <th>Viernes</th>
+   </tr>
+ </thead>
+ <tbody>
+   <tr>
+    <th>7am</th>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>8am</th>
+    <td rowspan="2" class="materia5"></td>
+    <td rowspan="2" class="materia6"></td>
+    <td></td>
+    <td></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>9am</th>
+    <td></td>
+    <td></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>10am</th>
+    <td rowspan=2 class="materia1"></td>
+    <td></td>
+    <td rowspan=2 class="materia1"></td>
+    <td></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>11am</th>
+    <td></td>
+    <td></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>12m</th>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>1pm</th>
+    <td rowspan=2 class="materia2"></td>
+    <td rowspan=2 class="materia2_lab"></td>
+    <td rowspan=2 class="materia2"></td>
+    <td></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>2pm</th>
+    <td></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>3pm</th>
+    <td></td>
+    <td rowspan=2 class="materia3"></td>
+    <td rowspan=2 class="materia3"></td>
+    <td class="materia6"></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>4pm</th>
+    <td></td>
+    <td class="materia5"></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>5pm</th>
+    <td class="materia4"></td>
+    <td rowspan=2 class="materia4"></td>
+    <td></td>
+    <td></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>6pm</th>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+   </tr>
+   <tr>
+    <th>7pm</th>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+   </tr>
+  </tbody>
+</table>
+
+</body>
+</html>
