@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Tabla</title>
   <style>
-  
-  body {
+
+   body {
     margin: 0;
   }
 
@@ -40,63 +40,47 @@
     font-family: serif;
     margin-bottom: 5px;
   }
-  
-  .materia1 {
-    background-color: orange;
-  }
-  .materia1::before {
-    content: "Ingles V\a\a Andrea Carolina Beltran Martinez";
-  }
-  
-  .materia2 {
-    background-color: lightblue;
-  }
-  .materia2::before {
-    content: "Fisica calor y ondas\a\a Alberto Patiño Vanegas";
-  }
-  
-  .materia2_lab {
-    background-color: #bbf;
-  }
-  .materia2_lab::before {
-    content: "Fisica LABORATORIO\a\a Gabriel Andres Hoyos Gomez Casseres";
-  }
-  
-  .materia3 {
-    background-color: greenyellow;
-  }
-  .materia3::before {
-    content: "Ecuaciones diferenciales\a\a John Beiro Moreno Barrios";
-  }
-  
-  .materia4 {
-    background-color: yellow;
-  }
-  .materia4::before {
-    content: "Estructura de datos\a\a Rafael Enrique Monterroza Barrios";
-  }
-  
-  .materia5 {
-    background-color: #ff8dff;
-    white
-  }
-  .materia5::before {
-    content: "Matematica discreta\a\a Maria Fernanda Medina Reyes";
-  }
-  
-  .materia6 {
-    background-color: wheat;
-  }
-  .materia6::before {
-    content: "Desarrollo de software\a\a Jairo Enrique Serrano Castañeda";
-  }
-  
+
+  #horario td:before { font-weight: bold; }
+  #horario td:after  { font-weight: lighter; }
+
+  .materia1 { background-color: orange; }
+  .materia1::before { content: "Ingles V\a"; }
+  .materia1::after  { content: "Andrea Carolina Beltran Martinez"; }
+
+  .materia2 { background-color: lightblue; }
+  .materia2::before { content: "Fisica calor y ondas\a"; }
+  .materia2::after  { content: "Alberto Patiño Vanegas"; }
+
+  .materia2_lab { background-color: #bbf; }
+  .materia2_lab::before { content: "Fisica LABORATORIO\a"; }
+  .materia2_lab::after  { content: "Gabriel Andres Hoyos Gomez Casseres"; }
+
+  .materia3 { background-color: greenyellow; }
+  .materia3::before { content: "Ecuaciones diferenciales\a"; }
+  .materia3::after { content: "John Beiro Moreno Barrios"; }
+
+  .materia4 { background-color: yellow; }
+  .materia4::before { content: "Estructura de datos\a"; }
+  .materia4::after { content: "Rafael Enrique Monterroza Barrios"; }
+
+  .materia5 { background-color: #ff8dff; }
+  .materia5::before { content: "Matematica discreta\a"; }
+  .materia5::after { content: "Maria Fernanda Medina Reyes"; }
+
+  .materia6 { background-color: wheat; }
+  .materia6::before { content: "Desarrollo de software\a"; }
+  .materia6::after { content: "Jairo Enrique Serrano Castañeda"; }
+
   @media (max-width: 520px) {
     body {
       font-size: 3vw;
     }
+    #horario, #horario th, #horario td {
+      border-width: 1px;
+    }
   }
-  
+
   @media (min-width: 800px) {
     body {
       margin: 0 3%;
