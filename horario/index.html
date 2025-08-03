@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
+	<meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Horario</title>
+	<title>Horario</title>
   <style>
-
+  
   body {
     margin: 0;
   }
@@ -23,7 +23,7 @@
     padding: 0;
     text-align: center;
     height: 2.5lh;
-    font-size: 0.8em;
+    font-size: 0.9em;
     white-space: pre-line;
   }
 
@@ -40,38 +40,39 @@
     font-family: serif;
     margin-bottom: 5px;
   }
-
+  
   #horario td:before { font-weight: bold; }
-  #horario td:after  { font-weight: normal; }
-
+  #horario td:after  { font-weight: normal; font-size: 80%; }
+  
   .materia1 { background-color: orange; }
   .materia1::before { content: "Ingles V\a"; }
   .materia1::after  { content: "Andrea Carolina Beltran Martinez"; }
-
+  
   .materia2 { background-color: lightblue; }
   .materia2::before { content: "Fisica calor y ondas\a"; }
   .materia2::after  { content: "Alberto Patiño Vanegas"; }
-
+  
   .materia2_lab { background-color: #bbf; }
   .materia2_lab::before { content: "Fisica LABORATORIO\a"; }
   .materia2_lab::after  { content: "Gabriel Andres Hoyos Gomez Casseres"; }
-
+  
   .materia3 { background-color: greenyellow; }
   .materia3::before { content: "Ecuaciones diferenciales\a"; }
-  .materia3::after  { content: "John Beiro Moreno Barrios"; }
-
+  .materia3::after { content: "John Beiro Moreno Barrios"; }
+  
   .materia4 { background-color: yellow; }
   .materia4::before { content: "Estructura de datos\a"; }
-  .materia4::after  { content: "Rafael Enrique Monterroza Barrios"; }
-
+  .materia4::after { content: "Rafael Enrique Monterroza Barrios"; }
+  
   .materia5 { background-color: #ff8dff; }
   .materia5::before { content: "Matematica discreta\a"; }
-  .materia5::after  { content: "Maria Fernanda Medina Reyes"; }
-
+  .materia5::after { content: "Maria Fernanda Medina Reyes"; }
+  
   .materia6 { background-color: wheat; }
   .materia6::before { content: "Desarrollo de software\a"; }
-  .materia6::after  { content: "Jairo Enrique Serrano Castañeda"; }
+  .materia6::after { content: "Jairo Enrique Serrano Castañeda"; }
 
+  
   @media (max-width: 520px) {
     body {
       font-size: 3vw;
@@ -80,7 +81,7 @@
       border-width: 1px;
     }
   }
-
+  
   @media (min-width: 800px) {
     body {
       margin: 0 3%;
@@ -116,8 +117,8 @@
    </tr>
    <tr>
     <th>8am</th>
-    <td rowspan="2" class="materia5"></td>
-    <td rowspan="2" class="materia6"></td>
+    <td rowspan="2" class="materia5"> A1-405<br> </td>
+    <td rowspan="2" class="materia6"> A1-405<br> </td>
     <td></td>
     <td></td>
     <td></td>
@@ -130,9 +131,9 @@
    </tr>
    <tr>
     <th>10am</th>
-    <td rowspan=2 class="materia1"></td>
+    <td rowspan=2 class="materia1"> A3-202<br> </td>
     <td></td>
-    <td rowspan=2 class="materia1"></td>
+    <td rowspan=2 class="materia1"> A3-202<br> </td>
     <td></td>
     <td></td>
    </tr>
@@ -152,9 +153,9 @@
    </tr>
    <tr>
     <th>1pm</th>
-    <td rowspan=2 class="materia2"></td>
-    <td rowspan=2 class="materia2_lab"></td>
-    <td rowspan=2 class="materia2"></td>
+    <td rowspan=2 class="materia2"> A2-308<br> </td>
+    <td rowspan=2 class="materia2_lab"> A5-204<br> </td>
+    <td rowspan=2 class="materia2"> A2-307<br> </td>
     <td></td>
     <td></td>
    </tr>
@@ -166,21 +167,21 @@
    <tr>
     <th>3pm</th>
     <td></td>
-    <td rowspan=2 class="materia3"></td>
-    <td rowspan=2 class="materia3"></td>
-    <td class="materia6"></td>
+    <td rowspan=2 class="materia3"> A2-206<br> </td>
+    <td rowspan=2 class="materia3"> A2-307<br> </td>
+    <td class="materia6"> A4-102<br> </td>
     <td></td>
    </tr>
    <tr>
     <th>4pm</th>
     <td></td>
-    <td class="materia5"></td>
+    <td class="materia5"> A1-405<br> </td>
     <td></td>
    </tr>
    <tr>
     <th>5pm</th>
-    <td class="materia4"></td>
-    <td rowspan=2 class="materia4"></td>
+    <td class="materia4"> A1-402<br> </td>
+    <td rowspan=2 class="materia4"> A1-401<br> </td>
     <td></td>
     <td></td>
     <td></td>
