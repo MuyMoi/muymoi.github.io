@@ -40,30 +40,34 @@ div.resultado {
 	overflow-x: scroll;
 }
 
-p.codigo {
+.codigo {
 	font-style: italic;
 	color: darkgreen;
 	border-bottom: 1px solid darkgreen;
 }
 
-p.error {
+.error {
 	margin-left: 20px;
 	color: brown;
 }
 
-p.result_eval {
+.result_eval {
 	margin-left: 20px;
 	color: blue;
 }
 
-p.normal {
+.normal {
 	margin-left: 20px;
 	color: black;
 }
 
-table.tabla_result {
+.tabla_result {
 	margin-left: 20px;
 	color: blue;
+}
+
+caption {
+  font-weight: bold;
 }
 
 /* --------------------  */
@@ -77,19 +81,21 @@ table.tabla_result {
 	border-top: 6px solid gray;
 	padding-bottom: 20px;
 	display: grid;
-	grid-template-columns: auto 4em;
+	grid-template-columns: auto 4.5em;
 }
 
 #codigo textarea {
 	resize: vertical;
-	grid-row: 1 / span 2;
+	grid-row: 1 / span 4;
 	/*
 	lo anterior es lo mismo que:
 	
 	grid-row-start: 1;
-  	grid-row-end: 2;
+  	grid-row-end: 4;
   	*/
 }
+
+#codigo input { display: none }
 
 </style>
 
@@ -104,6 +110,9 @@ table.tabla_result {
 		autocapitalize="off"></textarea>
 	<button id="exec">Ejecutar</button>
 	<button id="clear">Limpiar</button>
+	<button id="download">Descargar</button>
+	<button id="import">Importar</button>
+	<input type="file" id="import_input">
 </div>
 
 <script>
@@ -111,35 +120,71 @@ table.tabla_result {
 alert("Esta es una consola JavaScript, imitacion de "
 	+ "las consolas que proveen los navegadores con F12.\n"
 	+ "Usa el metodo escribir(texto).\n"
+	+ "Usa el metodo mostrarPropsObj(obj) para mostrar TODAS "
+	+ "las propiedades de un objeto.\n"
 	+ "Toca un comando del historial para editarlo.")
 
-let texto = document.getElementById('text'),
-    exec = document.getElementById('exec'),
-    clear = document.getElementById('clear'),
-    res = document.getElementById('contenedor_resultados')
+let botones = document.querySelectorAll('button'),
+    texto = document.getElementById('text'),
+    exec = botones[0],
+    clear = botones[1],
+    res = document.getElementById('contenedor_resultados'),
+    historialbueno = "",
+    desc = botones[2],
+    imp = botones[3],
+    inputfile = document.getElementById('import_input')
 
-
-function escribir(variable, tipo="normal") {
-	//El argumento tipo puede ser:
-	//normal:
+function escribir(variable, tipo="normal", elem) {
+	//El argumento indica la clase de formato:
+	//normal: letras negras sin italica ni negrita
 	//result_eval: lo que devuelve eval
 	//error: para mensajes de error
 	//codigo: para el codigo que ejecuto el usuario
-
 	if (typeof variable == "object" && variable != null) {
-		let t = agregar_tabla_result(),
-		    props = Object.getOwnPropertyNames(variable)
-		
-		t.createCaption().innerHTML += "<b>Numero de propiedades:" + 
-			props.length + "</b>"
+		mostrarPropsObj(variable, false)
+		return
+	}
 
-		for (let p of props) {
-			let valor = variable[p],
-			    fila = t.insertRow(),
-			    cel1 = fila.insertCell(),
-			    cel2 = fila.insertCell()
+	if (typeof elem == "undefined")
+		elem = agregar_parrafo_result(tipo)
+	elem.className = tipo
 
-			cel1.innerHTML = p + ":"
+	if (typeof variable == "string" && tipo != "error") {
+		elem.innerHTML += `"${variable}"`
+	} else {
+		elem.innerHTML += variable
+	}
+
+	return "Fin escribir"
+}
+
+function mostrarPropsObj(obj, mostrarprototipo=true) {
+  let t = agregar_tabla_result(),
+      capt = t.createCaption()
+
+  let props = Object.getOwnPropertyNames(obj)
+  
+  if (mostrarprototipo) {
+    let proto = obj.__proto__
+    
+    while(proto != null) {
+      let b = Object.getOwnPropertyNames(proto)
+      props.push(...b)
+      proto = proto.__proto__
+    }
+  }
+  
+  capt.innerHTML = "Numero de propiedades:" + props.length
+  
+  for (let p of props) {
+		let fila = t.insertRow(),
+			cel1 = fila.insertCell(),
+			cel2 = fila.insertCell()
+
+		cel1.innerHTML = p + ":"
+
+		try {
+			let valor = obj[p]
 
 			if (typeof valor == "string") {
 				cel2.innerHTML += `"${valor}"`
@@ -148,20 +193,16 @@ function escribir(variable, tipo="normal") {
 			} else {
 				cel2.innerHTML += `${valor}`
 			}
-		}
-	} else {
-		let p = agregar_parrafo_result(tipo)
-		if (typeof variable == "string" && tipo != "error") {
-			p.innerHTML += `"${variable}"`
-		} else {
-			p.innerHTML += variable
+		} catch(e) {
+			cel2.className = "error"
+			cel2.innerHTML = "<b>" + e.name + ":</b> " + e.message
 		}
 	}
-
-	return "Fin escribir"
 }
 
 exec.onclick = ()=> {
+	texto.focus()
+
 	if (texto.value == "")
 		return
 
@@ -175,6 +216,7 @@ exec.onclick = ()=> {
 	try {
 		retorno = eval?.(texto.value)
 		escribir(retorno, "result_eval")
+		historialbueno += texto.value + "\n"
 	} catch (e) {
 		escribir("<b>" + e.name + ":</b> " + e.message, "error")
 	}
@@ -192,12 +234,36 @@ clear.onclick = (e)=> {
 
 res.onclick = (e)=> {
 	let elem = e.target
-
-	if (elem.tagName == "P") {
-		texto.value = elem.parentElement.firstChild.innerText
-	} else if (elem.className == "resultado") {
-		texto.value = elem.firstChild.innerText
+	
+	if (elem.id == "contenedor_resultados") return
+	
+	while (elem.className != "resultado"){
+	  elem = elem.parentElement
 	}
+	
+	texto.value = elem.firstChild.innerText
+}
+
+desc.onclick = function () {
+  if (historialbueno == "") return
+
+	let f = new Blob([historialbueno], {type:"text/plain"}),
+		url = URL.createObjectURL(f),
+		a = document.createElement("a")
+
+	a.href = url
+	a.download = "historial.txt"
+	a.click()
+	URL.revokeObjectURL(url)
+}
+
+imp.onclick = function() {
+	inputfile.showPicker()
+}
+
+inputfile.onchange = function(e) {
+	inputfile.files[0].text()
+	  .then((t)=>texto.value = t)
 }
 
 function agregar_div_result() {
