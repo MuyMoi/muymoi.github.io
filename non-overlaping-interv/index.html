@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Maximum Non-Overlaping Intervals Algorithm</title>
+	<style>
+		textarea {
+			display: block;
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+
+	<h1>Maximum Non-Overlaping Intervals Algorithm</h1>
+	<p>Escribe el arreglo con intervalos. Ejemplo: [ [1,2], [2,3], [2,4] ]</p>
+	<textarea placeholder="Ejemplo: [ [1,2], [2,3], [2,4] ]"></textarea>
+	<br>
+	<button>Ejecutar algoritmo</button>
+	<p id="p1"></p>
+
+<script>
+	const t = document.querySelector("textarea")
+	const p = document.getElementById("p1")
+	document.querySelector("button").onclick = demostracion
+
+	function printArray(a) {
+		p.innerText += "[ "
+		for (let i=0; i<a.length; i++ ){
+			p.innerText += ` [${a[i][0]}, ${a[i][1]}],`
+		}
+		p.innerText += "]"
+	}
+
+	function minRemoval(intervals) {
+		let count = 0  //Cuenta de intervalos removidos
+		let i=0;
+
+		intervals.sort((a, b) => a[0] - b[0]) //Ordenar por valor de inicio
+
+		while (i < intervals.length-1) {
+			let current = intervals[i]  //Intervalo actual
+			let next = intervals[i+1]   //Intervalo siguiente
+
+			if (current[1] > next[0]) {
+        //Solapamiento: se debe borrar un intervalo
+				//Se borra el intervalo con mayor final
+				let i_to_remove = (current[1] > next[1]) ? i : i+1;
+
+				intervals.splice(i_to_remove,1) //Se borra el intervalo
+				count++  //Se aumenta el conteo
+			}
+			else { // Si no hay solapamiento, avanzo el indice
+				i++
+			}
+		}
+
+		return count
+
+	}
+
+	function demostracion() {		
+		let arr = eval(t.value)
+
+		p.innerText="\n\nArreglo de intervalos original: "
+		printArray(arr)
+
+		p.innerText+="\n\nArreglo ordenado por valor de inicio: "
+		printArray(arr.sort((a, b) => a[0] - b[0]))
+
+		let count = minRemoval(arr)
+
+		p.innerText+="\n\nArreglo resultante con intervalos no solapados: "
+		printArray(arr)
+		p.innerText+="\n\n# removidos: " + count
+	}
+</script>
+</body>
+</html>
