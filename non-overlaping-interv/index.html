@@ -33,47 +33,76 @@
 		p.innerText += "]"
 	}
 
+	//Implementacion por ordenamiento de valores de inicio
 	function minRemoval(intervals) {
-		let count = 0  //Cuenta de intervalos removidos
-		let i=0;
-
-		intervals.sort((a, b) => a[0] - b[0]) //Ordenar por valor de inicio
-
-		while (i < intervals.length-1) {
-			let current = intervals[i]  //Intervalo actual
-			let next = intervals[i+1]   //Intervalo siguiente
-
-			if (current[1] > next[0]) {
-        //Solapamiento: se debe borrar un intervalo
-				//Se borra el intervalo con mayor final
-				let i_to_remove = (current[1] > next[1]) ? i : i+1;
-
-				intervals.splice(i_to_remove,1) //Se borra el intervalo
-				count++  //Se aumenta el conteo
-			}
-			else { // Si no hay solapamiento, avanzo el indice
-				i++
-			}
-		}
-
-		return count
-
+	  let count = 0;  //Cuenta de intervalos removidos
+	  let i=0;
+	
+	  intervals.sort((a, b) => a[0] - b[0]); //Ordenar por valor de inicio
+	
+	  while (i < intervals.length-1) {
+	    let current = intervals[i];  //Intervalo actual
+	    let next = intervals[i+1];   //Intervalo siguiente
+	
+	    if (current[1] > next[0]) {
+	        //Solapamiento: se debe borrar un intervalo
+	        //Se borra el intervalo con mayor final
+	        let i_to_remove = (current[1] > next[1]) ? i : i+1;
+	        intervals.splice(i_to_remove,1); //Se borra el intervalo
+	        count++;                         //Se aumenta el conteo
+	    } else {
+	      i++; //Si no hay solapamiento, avanzo el indice
+	    }
+	  }
+	  return count;
+	}
+	
+	//Implementacion por ordenamiento de valores de fin
+	function minRemoval2(intervals) {
+	  let count = 0;  //Cuenta de intervalos removidos
+	  let i=0;
+	
+	  intervals.sort((a, b) => a[1] - b[1]); //Ordenar por valor de fin
+	
+	  while (i < intervals.length-1) {
+	    let current = intervals[i];  //Intervalo actual
+	    let next = intervals[i+1];   //Intervalo siguiente
+	
+	    if (current[1] > next[0]) {
+	        //Solapamiento: se debe borrar el siguiente intervalo
+	        intervals.splice(i+1,1); //Se borra el intervalo
+	        count++;                 //Se aumenta el conteo
+	    } else {
+	      i++; //Si no hay solapamiento, avanzo el indice
+	    }
+	  }
+	  return count;
 	}
 
 	function demostracion() {		
-		let arr = eval(t.value)
+		let arr1 = eval(t.value)
+		let arr2 = [...arr1]
+		let count
 
-		p.innerText="\n\nArreglo de intervalos original: "
-		printArray(arr)
-
-		p.innerText+="\n\nArreglo ordenado por valor de inicio: "
-		printArray(arr.sort((a, b) => a[0] - b[0]))
-
-		let count = minRemoval(arr)
-
-		p.innerText+="\n\nArreglo resultante con intervalos no solapados: "
-		printArray(arr)
-		p.innerText+="\n\n# removidos: " + count
+		p.innerHTML="<br><br>Arreglo de intervalos original: "
+		printArray(arr1)
+		
+		p.innerHTML+="<h3>Algoritmo 1: Ordenando por valor de inicio</h3>";
+		p.innerHTML+="Arreglo ordenado por valor de inicio: "
+		printArray(arr1.sort((a, b) => a[0] - b[0]))
+		count = minRemoval(arr1)
+		p.innerHTML+="<br><br>Arreglo resultante con intervalos no solapados: "
+		printArray(arr1)
+		p.innerHTML+="<br><br># removidos: " + count
+		
+		
+		p.innerHTML+="<br><h3>Algoritmo 2: Ordenando por valor final</h3>";
+		p.innerHTML+="Arreglo ordenado por valor de fin: "
+		printArray(arr2.sort((a, b) => a[1] - b[1]))
+		count = minRemoval2(arr2)
+		p.innerHTML+="<br><br>Arreglo resultante con intervalos no solapados: "
+		printArray(arr2)
+		p.innerHTML+="<br><br># removidos: " + count
 	}
 </script>
 </body>
