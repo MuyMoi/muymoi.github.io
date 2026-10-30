@@ -5,6 +5,7 @@ const memoryToggle = document.querySelector("#toggle-memory");
 const memoryPanel = document.querySelector("#memory-panel");
 const layout = document.querySelector(".layout");
 const historyList = document.querySelector("#step-history");
+const verilogToggle = document.querySelector("#verilog-toggle");
 const memoryBlocks = new Map();
 const writtenBackWords = new Set();
 const caches = [Array(4).fill(null), Array(4).fill(null)];
@@ -298,6 +299,13 @@ memoryToggle.addEventListener("click", () => {
   memoryToggle.setAttribute("aria-expanded", String(!isExpanded));
   memoryToggle.textContent = isExpanded ? "Mostrar memoria" : "Ocultar memoria";
 });
+
+verilogToggle.addEventListener("click", () => {
+  const isExpanded = verilogToggle.nextElementSibling.hidden == true;
+  if (isExpanded) verilogToggle.textContent = "Mostrar código";
+  else verilogToggle.textContent = "Ocultar código";
+  verilogToggle.nextElementSibling.hidden = !isExpanded;
+})
 
 for (let cpu = 0; cpu < caches.length; cpu += 1) {
   setFsmState(cpu, "Idle");

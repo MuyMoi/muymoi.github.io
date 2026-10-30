@@ -7,11 +7,621 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <h1>Capítulo 5.12</h1>
+    <div class="expo">
+      <div>
+        <h1>Sección 5.12: Implementing Cache Controllers</h1>
+        <h3>Objetivo de la sección:</h3>
+        <p>Mostrar cómo implementar un controlador de caché y protocolos de coherencia en hardware usando máquinas de estados finitos y SystemVerilog.</p>
+
+        <h3>Conceptos previos</h3>
+        <ul>
+          <li>hits</li>
+          <li>misses</li>
+          <li>write-back</li>
+          <li>write-allocate</li>
+          <li>localidad temporal y espacial</li>
+        </ul>
+      </div>
+
+      <hr>
+      <h2>Caché utilizada en el ejemplo</h2>
+      <div class="grid-subsection">
+        
+        <div>
+          <p>Tiene estas características:</p>
+          <ul>
+            <li>Direct-mapped (una sola vía)</li>
+            <li>Tamaño de caché de 16 KiB = 2<sup>14</sup> bytes = 1024 bloques</li>
+            <li>1 bloque = 4 palabras = 16 bytes = 128 bits</li>
+            <li>Write back usando write-allocate</li>
+            <li>Direcciones de 32 bits</li>
+            <li>Valid bit: indica si los datos del bloque son correctos o si solo son algún valor aleatorio</li>
+            <li>Dirty bit: indica si el bloque de la caché cambió y debe ser escrito en memoria principal antes de sobreescribirse</li>
+          </ul>
+
+          <p>La dirección puede descomponerse en Tag, Index, Block offset (o Word offset) y Byte Offset.</p>
+
+          <table>
+            <tr>
+              <th rowspan="2"></th> <th colspan="4">Dirección</th>
+            </tr>
+            <tr>
+              <th>Tag</th> <th>Index</th> <th>Block offset</th> <th>Byte offset</th>
+            </tr>
+
+            <tr>
+              <th>Bits</th> <td>31:14</td> <td>13:4</td> <td>3:2</td> <td>1:0</td>
+            </tr>
+          </table>
+
+          <ul>
+            <li>Tag = 18 bits</li>
+            <li>Index = 10 bits</li>
+            <li>Block offset = 2 bits</li>
+            <li>Byte offset = 2 bits</li>
+          </ul>
+        </div>
+
+        <div>
+          <img src="cache.png">
+        </div>
+      </div>
+
+
+      <hr>
+      <h2>Finite State Machine</h2>
+      <div class="grid-subsection">
+
+        <div>
+          <p>La FSM tiene 4 estados principales:</p>
+          
+          <h3>1. Idle</h3>
+          <p>Es el estado de espera: el controlador espera una petición del procesador.</p>
+          <ul>
+            <li>Si llega una solicitud: → pasa a Compare Tag.</li>
+          </ul>
+
+
+          <h3>2. Compare Tag</h3>
+          <p>Compara Tag solicitado con Tag almacenado.</p>
+
+          <h4>Si coinciden: ✅ Cache Hit</h4>
+          <ul>
+            <li>Se lee o escribe el dato.</li>
+            <li>En una escritura se marca el bloque como dirty.</li>
+          </ul>
+          
+          <h4>Si no coinciden: ❌ Cache Miss</h4>
+          Entonces:
+          <ul>
+            <li>Si el bloque actual está limpio → Allocate.</li>
+            <li>Si está sucio → Write Back.</li>
+          </ul>
+
+
+
+          <h3>3. Write Back</h3>
+
+          <p>Ocurre cuando el bloque que se va a reemplazar está modificado.</p>
+          <p>Acciones:</p>
+          <ol>
+            <li>Escribir bloque en memoria principal.</li>
+            <li>Esperar respuesta.</li>
+            <li>Ir a Allocate</li>
+          </ol>
+
+
+
+          <h3>4. Allocate</h3>
+          <p>Acciones:</p>
+          <ol>
+            <li>Solicitar nuevo bloque a memoria.</li>
+            <li>Guardarlo en caché.</li>
+            <li>Regresar a Compare Tag para reintentar la operación.</li>
+          </ol>
+        </div>
+
+        <div>
+          <img src="fsm4estados.png" width="500px">
+          
+          <h3>Resumen:</h3>
+          <table>
+            <tr>
+              <th>Estado</th> <th>Función</th>
+            </tr>
+            <tr>
+              <td>Idle</td>
+              <td>Esperar solicitud</td>
+            </tr>
+              <td>Compare Tag</td>
+              <td>Determinar si hay un hit o un miss</td>
+            <tr>  
+              <td>Allocate</td>
+              <td>Leer bloque desde memoria</td>
+            </tr>
+            <tr>  
+              <td>Write-Back</td>
+              <td>Escribir bloque sucio (que ha cambiado en la memoria principal, pero aún está pendiente de ser escrito)</td>
+            </tr>
+            
+          </table>
+        </div>
+      </div>
+
+      <hr>
+      <h2>Código en SystemVerilog</h2>
+      <button id="verilog-toggle">Mostrar código</button>
+      <div id="verilog-code" hidden>
+        <img src="verilog1.png" width="500px">
+        <img src="verilog2.png" width="500px">
+        <img src="verilog3.png" width="500px">
+        <img src="verilog4.png" width="500px">
+        <img src="verilog5.png" width="500px">
+        <img src="verilog6.png" width="500px">
+        <img src="verilog7.png" width="500px">
+        <!--<pre>package cache_def;
+ // data structures for cache tag & data
+ 
+ parameter int TAGMSB = 31; //tag msb
+ parameter int TAGLSB = 14; //tag lsb
+ //data structure for cache tag
+ typedef struct packed {
+  bit  valid; //valid bit
+  bit  dirty; //dirty bit
+  bit [TAGMSB:TAGLSB]tag; //tag bits
+ }cache_tag_type;
+ //data structure for cache memory request
+ typedef struct {
+  bit [9:0]index; //10-bit index
+  bit  we; //write enable
+ }cache_req_type;
+ //128-bit cache line data
+ typedef bit [127:0]cache_data_type;
+
+
+// data structures for CPU<->Cache controller interface
+ 
+ // CPU request (CPU->cache controller)
+ typedef struct {
+  bit [31:0]addr; //32-bit request addr
+  bit [31:0]data; //32-bit request data (used when write)
+etirw = 1 ,daer = 0 : epyt tseuqer// ;wr tib  
+  bit valid; //request is valid
+ }cpu_req_type;
+ // Cache result (cache controller->cpu)
+ typedef struct {
+  bit [31:0]data; //32-bit data
+  bit ready; //result is ready
+ }cpu_result_type;
+ 
+ //---------------------------------------------------------------------
+ // data structures for cache controller<->memory interface
+ 
+ // memory request (cache controller->memory)
+ typedef struct {
+  bit [31:0]addr; //request byte addr
+  bit [127:0]data; //128-bit request data (used when write)
+etirw = 1 ,daer = 0 : epyt tseuqer// ;wr tib  
+  bit valid; //request is valid
+ }mem_req_type;
+ // memory controller response (memory -> cache controller)
+ typedef struct {
+  cache_data_type data; //128-bit read back data
+  bit  ready; //data is ready
+ }mem_data_type;
+endpackage
+
+
+/*cache: data memory, single port, 1024 blocks*/
+module dm_cache_data(input  bit clk, 
+  input  cache_req_type  data_req,//data request/command, e.g. RW, valid
+  input  cache_data_type data_write, //write port (128-bit line) 
+  output cache_data_type data_read); //read port
+ timeunit 1ns; timeprecision 1ps;
+ cache_data_typedata_mem[0:1023];
+ initial begin
+  for (int i=0; i<1024; i++) 
+        data_mem[i] = ‘0;
+ end
+ 
+ assign data_read = data_mem[data_req.index];
+ always_ff @(posedge(clk)) begin
+  if (data_req.we)
+   data_mem[data_req.index] <= data_write;
+ end
+endmodule
+/*cache: tag memory, single port, 1024 blocks*/
+module dm_cache_tag(input  bit clk, //write clock
+  input  cache_req_type tag_req, //tag request/command, e.g. RW, valid
+  input  cache_tag_type tag_write,//write port    
+  output cache_tag_type tag_read);//read port
+ timeunit 1ns; timeprecision 1ps;
+ cache_tag_typetag_mem[0:1023];
+ initial begin
+     for (int i=0; i<1024; i++) 
+     tag_mem[i] = ‘0;
+ end
+ assign tag_read = tag_mem[tag_req.index];
+ always_ff @(posedge(clk)) begin
+  if (tag_req.we)
+   tag_mem[tag_req.index] <= tag_write;
+ end
+endmodule
+
+
+/*cache finite state machine*/
+module dm_cache_fsm(input  bit clk, input  bit rst,
+      input  cpu_req_type     cpu_req,       //CPU request input (CPU->cache)
+      input  mem_data_type mem_data,       //memory response (memory->cache)
+      output mem_req_type mem_req,         //memory request (cache->memory)
+      output cpu_result_type cpu_res         //cache result (cache->CPU)
+  );
+ timeunit 1ns; 
+ timeprecision 1ps;
+ /*write clock*/
+ typedef enum {idle, compare_tag, allocate, write_back} cache_state_type;
+ 
+ /*FSM state register*/
+ cache_state_typevstate, rstate;
+ /*interface signals to tag memory*/
+ cache_tag_typetag_read;     //tag read result
+ cache_tag_typetag_write;     //tag write data
+ cache_req_typetag_req;     //tag request
+ 
+ /*interface signals to cache data memory*/
+ cache_data_typedata_read;     //cache line read data
+ cache_data_typedata_write;     //cache line write data
+ cache_req_typedata_req;     //data req
+ 
+ 
+ /*temporary variable for cache controller result*/
+ cpu_result_typev_cpu_res; 
+ 
+ /*temporary variable for memory controller request*/
+ mem_req_typev_mem_req;
+ 
+ assign mem_req = v_mem_req;     //connect to output ports
+ assign cpu_res = v_cpu_res;
+
+
+always_comb begin
+  
+  /*-------------------------default values for all signals------------*/
+  /*no state change by default*/
+  vstate = rstate;    
+  v_cpu_res = ‘{0, 0}; tag_write = ‘{0, 0, 0}; 
+  /*read tag by default*/
+  tag_req.we = ‘0;  
+  /*direct map index for tag*/
+   tag_req.index = cpu_req.addr[13:4];
+  
+  /*read current cache line by default*/
+  data_req.we = ‘0;
+  /*direct map index for cache data*/
+  data_req.index = cpu_req.addr[13:4];
+  /*modify correct word (32-bit) based on address*/
+  data_write = data_read;   
+  case(cpu_req.addr[3:2])
+  2’b00:data_write[31:0] = cpu_req.data;
+  2’b01:data_write[63:32] = cpu_req.data;
+  2’b10:data_write[95:64] = cpu_req.data;
+  2’b11:data_write[127:96] = cpu_req.data;
+  endcase
+  
+  /*read out correct word(32-bit) from cache (to CPU)*/
+  case(cpu_req.addr[3:2])
+  2’b00:v_cpu_res.data = data_read[31:0];
+  2’b01:v_cpu_res.data = data_read[63:32];
+  2’b10:v_cpu_res.data = data_read[95:64];
+  2’b11:v_cpu_res.data = data_read[127:96];
+  endcase
+  
+  /*memory request address (sampled from CPU request)*/
+  v_mem_req.addr = cpu_req.addr; 
+  /*memory request data (used in write)*/
+  v_mem_req.data = data_read;  
+  v_mem_req.rw = '0;
+
+
+//------------------------------------Cache FSM------------------------
+  case(rstate)
+  /*idle state*/
+  idle : begin
+    /*If there is a CPU request, then compare cache tag*/
+    if (cpu_req.valid)
+  vstate = compare_tag;
+  end
+  /*compare_tag state*/ 
+  compare_tag : begin
+              /*cache hit (tag match and cache entry is valid)*/
+     if (cpu_req.addr[TAGMSB:TAGLSB] == tag_read.tag && tag_read.valid) begin
+              v_cpu_res.ready = ‘1;
+     
+         /*write hit*/
+          if (cpu_req.rw) begin  
+           /*read/modify cache line*/
+           tag_req.we = ‘1; data_req.we = ‘1;
+          /*no change in tag*/
+          tag_write.tag = tag_read.tag; 
+          tag_write.valid = ‘1;
+          /*cache line is dirty*/
+          tag_write.dirty = ‘1;    
+          end 
+      
+              /*xaction is fi nished*/
+              vstate = idle; 
+    end 
+          /*cache miss*/
+          else begin 
+       /*generate new tag*/
+           tag_req.we = ‘1; 
+           tag_write.valid = ‘1;
+           /*new tag*/
+           tag_write.tag = cpu_req.addr[TAGMSB:TAGLSB];
+           /*cache line is dirty if write*/
+           tag_write.dirty = cpu_req.rw;
+     
+           /*generate memory request on miss*/
+           v_mem_req.valid = ‘1; 
+           /*compulsory miss or miss with clean block*/
+            if (tag_read.valid == 1’b0 || tag_read.dirty == 1’b0)
+  /*wait till a new block is allocated*/
+  vstate = allocate;
+
+
+else begin
+     /*miss with dirty line*/
+      /*write back address*/
+      v_mem_req.addr = {tag_read.tag, cpu_req.addr[TAGLSB-1:0]};
+      v_mem_req.rw = ‘1;  
+      /*wait till write is completed*/
+      vstate = write_back;
+     end
+    end 
+  end
+  /*wait for allocating a new cache line*/
+  allocate: begin    
+    /*memory controller has responded*/
+    if (mem_data.ready) begin
+         /*re-compare tag for write miss (need modify correct word)*/
+         vstate = compare_tag; 
+         data_write = mem_data.data;
+         /*update cache line data*/
+         data_req.we = ‘1;  
+    end 
+        end
+  /*wait for writing back dirty cache line*/
+  write_back : begin   
+    /*write back is completed*/
+    if (mem_data.ready) begin
+         /*issue new memory request (allocating a new line)*/
+         v_mem_req.valid = ‘1;   
+         v_mem_req.rw = ‘0;    
+      
+         vstate = allocate; 
+    end
+   end
+  endcase
+ end
+ always_ff @(posedge(clk)) begin
+  if (rst) 
+   rstate <= idle; //reset to idle state
+  else 
+   rstate <= vstate;
+ end
+ /*connect cache tag/data memory*/
+ dm_cache_tag  ctag(.*);
+ dm_cache_data cdata(.*);
+endmodule</pre>-->
+      </div>
+
+
+      <hr>
+      <h2>Coherencia de caché</h2>
+      <div class="grid-subsection">
+        <div class="with-border-right">
+          
+          <p>Con un solo procesador no hay inconveniente en accesos a cachés:</p>
+          <ul>
+            <li>Hay una memoria principal.</li>
+            <li>Hay una caché.</li>
+            <li>El controlador sabe cuál es la copia más reciente.</li>
+          </ul>
+          <p>Pero ¿qué pasa si hay dos procesadores?</p>
+          
+          <p class="center">𝐶𝑃𝑈<sub>1</sub>↔𝐶𝑎𝑐ℎ𝑒<sub>1</sub></p>
+          <p class="center">𝐶𝑃𝑈<sub>2</sub>↔𝐶𝑎𝑐ℎ𝑒<sub>2</sub></p>
+          
+          <p>Ambos pueden tener una copia del mismo bloque. Por ejemplo, 𝑋=10 en memoria principal. Las dos cachés cargan ese bloque. Entonces:</p>
+          <p class="center">𝐶𝑎𝑐ℎ𝑒<sub>1</sub>=10</p>
+          <p class="center">𝐶𝑎𝑐ℎ𝑒<sub>2</sub>=10</p>
+
+        </div>
+
+        <div>
+          <p>Ahora supongamos que 𝐶𝑃𝑈<sub>1</sub> ejecuta:</p>
+          <p class="center">𝑋=20</p>
+
+          <h4>La pregunta es: ¿Cómo se entera 𝑪𝒂𝒄𝒉𝒆_𝟐 de que el valor cambió?</h4>
+
+          <p>Si no hace nada, 𝐶𝑃𝑈<sub>2</sub> podría seguir leyendo 𝑋=10 aunque el valor correcto sea 𝑋=20</p>
+
+          <p>A esto se le llama un problema de coherencia de caché.</p>
+
+        </div>
+      </div>
+
+      <hr>
+      <h2>Protocolo MSI</h2>
+      <div class="grid-subsection">
+        <div class="with-border-right">
+          <p>Una solución pasa por usar el protocolo MSI, que usa tres estados. Cada línea de caché puede estar en uno de estos estados:</p>
+          <ul>
+            <li>𝑀=𝑀𝑜𝑑𝑖𝑓𝑖𝑒𝑑: La caché con este estado posee la versión más reciente</li>
+            <li>𝑆=𝑆ℎ𝑎𝑟𝑒𝑑: El bloque existe en varias cachés y todas las copias son idénticas</li>
+            <li>𝐼=𝐼𝑛𝑣𝑎𝑙𝑖𝑑: La copia almacenada en la caché ya no es válida; Si un procesador necesita el dato deberá volver a solicitarlo.</li>
+          </ul>
+
+          <p>Cuando un procesador quiere escribir:</p>
+          <ul>
+            <li>invalida las copias de otros procesadores,</li>
+            <li>obtiene exclusividad,</li>
+            <li>actualiza el dato  </li>
+          </ul>
+          
+        </div>
+
+        <div>
+          <h4>Ejemplo:</h4>
+          <p>Supóngase que un bloque está en estado Shared</p>
+          <p class="center">
+          𝐶𝑎𝑐ℎ𝑒<sub>1</sub>=𝑋 (𝐸𝑠𝑡𝑎𝑑𝑜 𝑆)<br>
+          𝐶𝑎𝑐ℎ𝑒<sub>2</sub>=𝑋 (𝐸𝑠𝑡𝑎𝑑𝑜 𝑆)</p>
+          
+
+          <p>Si 𝐶𝑃𝑈<sub>1</sub>quiere modificarlo:</p>
+          <ol>
+            <li>Obtiene exclusividad.</li>
+            <li>Las demás cachés invalidan sus copias.</li>
+            <li>Su copia pasa a Modified.</li>
+          </ol>
+          <p>Entonces:</p>
+          <p class="center">𝐶𝑎𝑐ℎ𝑒<sub>1</sub>:𝑀<br>
+          𝐶𝑎𝑐ℎ𝑒<sub>2</sub>:𝐼</p>
+
+
+
+        </div>
+      </div>
+
+      <hr>
+      <h2>Snooping</h2>
+      <div>
+        <h3>¿Cómo saben las otras cachés que deben invalidarse?</h3>
+        <p>Mediante <b>snooping</b>. La idea es sencilla:</p>
+        <ul>
+          <li>Todas las cachés observan el bus.</li>
+          <li>Todas escuchan las operaciones de las demás.</li>
+          <li>Si detectan una escritura que afecta a un bloque que poseen, actualizan su estado.</li>
+        </ul>
+        <p>Es como si todas estuvieran "espiando" el tráfico del sistema.</p>
+      </div>
+
+      <div>
+        <hr>
+        <h1>Modeling an intelligent controller for predictive caching in AR/VR-enabled home scenarios </h1>
+        <ul>
+          <li>Sharare Zehtabian, Siavash Khodadadeh, Ladislau Bölöni, Damla Turgut</li>
+          <li>Department of Computer Science, University of Central Florida, Orlando, FL, USA</li>
+        </ul>
+      </div>
+
+      <h2>Problema que resuelve</h2>
+      <div>
+
+        <p>Los autores parten de la idea de que en el futuro muchos servicios se consumirán mediante realidad aumentada o virtual (AR/VR).
+        Por ejemplo: noticias, clima, recetas, tráfico, disponibilidad de parqueaderos.</p>
+        <p>Si el contenido no está cacheado localmente:</p>
+
+        <ul>
+          <li>aumenta la latencia,</li>
+          <li>disminuye la satisfacción del usuario,</li>
+          <li>se consume más ancho de banda.</li>
+        </ul>
+        <p>Cachear todo tampoco es viable porque el almacenamiento es limitado y algunos contenidos son muy grandes. Entonces surge la pregunta:</p>
+
+        <p><b>¿Qué contenido conviene guardar en caché antes de que el usuario lo solicite?</b></p>
+      </div>
+
+      <hr>
+      <h2>Idea principal</h2>
+      <div class="grid-subsection">
+        <div class="with-border-right">
+          <p>Los autores construyen un controlador inteligente de caché predictiva. La idea es:</p>
+          <ol>
+            <li>Observar hábitos del usuario.</li>
+            <li>Intentar predecir qué solicitará después.</li>
+            <li>Guardar previamente ese contenido en caché.</li>
+          </ol>
+          <p>Por ejemplo: Si una persona suele consultar el clima antes de salir de casa, el sistema aprende ese patrón y cachea el pronóstico antes de que sea solicitado.</p>
+        </div>
+
+        <div>
+          <p>No existían conjuntos de datos suficientemente grandes sobre solicitudes AR/VR. Por ello utilizaron:</p>
+          <ul>
+            <li>bases de datos reales de hogares inteligentes,</li>
+            <li>bases de datos simuladas de actividades domésticas</li>
+          </ul>
+          <p>A partir de actividades como desayunar, vestirse, salir de casa, cocinar, etc. generaron solicitudes sintéticas de:</p>
+          <ul>
+            <li>clima,</li>
+            <li>tráfico,</li>
+            <li>noticias,</li>
+            <li>recetas,</li>
+          </ul>
+        </div>
+      </div>
+
+
+      <hr>
+      <h2>Métodos propuestos</h2>
+      <div>
+        <p>Los autores comparan tres estrategias principales:</p>
+
+        <table>
+          <tr>
+            <th>1. Probability-Based Caching</th>
+            <th>2. LSTM-Based Caching</th>
+            <th>3. Majority-Voting Caching</th>
+          </tr>
+          <tr>
+            <td>Calcula la probabilidad de cada solicitud según la hora del día.<br>Ejemplo: A las 7:00 AM el usuario suele consultar el clima. Entonces se cachea el pronóstico.</td>
+            <td>Utiliza redes neuronales LSTM para aprender secuencias temporales de comportamiento del usuario.<br>Ejemplo: desayuno, salir de casa, tráfico... La red aprende esos patrones y predice la siguiente solicitud.</td>
+            <td>Combina varios modelos LSTM. La decisión final se toma mediante votación.</td>
+          </tr>
+        </table>
+      </div>
+
+
+      <hr>
+      <h2>¿Contra qué los comparan?</h2>
+      <div>
+        <p>Los comparan con tres estrategias base:</p>
+        <ul>
+          <li><b>Oracle:</b> Predicción perfecta. Es el resultado ideal.</li>
+          <li><b>Cache Everything:</b> Guardar todo. Produce latencia mínima pero costo muy alto. </li>
+          <li><b>Random Caching:</b> Elegir contenido aleatoriamente.</li>
+        </ul>
+      </div>
+
+      <hr>
+      <h2>Resultados</h2>
+      <div>
+        <p>Los autores concluyen que:</p>
+        <ul>
+          <li>LSTM obtiene muy buenos resultados.</li>
+          <li>Majority Voting también obtiene resultados altos.</li>
+          <li>Ambos superan claramente a las estrategias simples.</li>
+        </ul>
+        <p>Además logran un mejor equilibrio entre satisfacción del usuario y costo de almacenamiento.</p>
+      </div>
+
+      <hr>
+      <h2>Conclusión</h2>
+      <div>
+        <p>La sección 5.12 explica cómo implementar el hardware de una caché mediante una máquina de estados finitos. El artículo estudia un problema diferente: decidir inteligentemente qué contenido almacenar en caché antes de que sea solicitado. Ambos trabajos buscan mejorar el rendimiento de los sistemas mediante el uso eficiente de la memoria caché.<br>
+        A continuación se presenta un simulador del controlador de caché simple descrito en el capítulo.</p>
+      </div>
+    </div>
+
+
+    <hr>
+
+
     <div class="app-shell">
       <header class="titlebar">
-        <h1>Controlador de caché MSI</h1>
-        <p>Dos procesadores, cachés privadas de cuatro líneas y memoria principal</p>
+        <h1>Simulador: Controlador de caché FSM y MSI</h1>
+        <p>Dos procesadores, cachés privadas y memoria principal</p>
         <button
           id="toggle-memory"
           class="memory-toggle"
@@ -90,7 +700,7 @@
           <div class="fsm-panel">
             <h3>FSM de la caché 1</h3>
             <p class="fsm-current" id="cache1-fsm-current" aria-live="polite">Estado actual: Idle</p>
-            <svg class="fsm-diagram" viewBox="0 0 540 270" role="img" aria-labelledby="cache1-fsm-title cache1-fsm-description">
+            <svg class="fsm-diagram" viewBox="0 0 440 270" role="img" aria-labelledby="cache1-fsm-title cache1-fsm-description">
               <title id="cache1-fsm-title">FSM de la caché 1</title>
               <desc id="cache1-fsm-description">Idle pasa a Compare Tag al recibir una solicitud. Un acierto vuelve a Idle; un fallo clean pasa a Allocate y uno dirty pasa primero por Write Back.</desc>
               <defs>
@@ -198,7 +808,7 @@
           <div class="fsm-panel">
             <h3>FSM de la caché 2</h3>
             <p class="fsm-current" id="cache2-fsm-current" aria-live="polite">Estado actual: Idle</p>
-            <svg class="fsm-diagram" viewBox="0 0 540 270" role="img" aria-labelledby="cache2-fsm-title cache2-fsm-description">
+            <svg class="fsm-diagram" viewBox="0 0 440 270" role="img" aria-labelledby="cache2-fsm-title cache2-fsm-description">
               <title id="cache2-fsm-title">FSM de la caché 2</title>
               <desc id="cache2-fsm-description">Idle pasa a Compare Tag al recibir una solicitud. Un acierto vuelve a Idle; un fallo clean pasa a Allocate y uno dirty pasa primero por Write Back.</desc>
               <defs>
@@ -246,7 +856,8 @@
           <h2 id="memory-title">Memoria principal</h2>
             <p class="address-note">
               La dirección se forma con tag + índice del bloque + offset de word;
-              los dos bits de byte offset siempre son <code>00</code>.
+              los dos bits de byte offset siempre son <code>00</code>. Los valores
+              iniciales son aleatorios.
             </p>
             <div class="table-wrap">
               <table id="memory-table">
