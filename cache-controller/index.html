@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador de controlador de caché MSI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1>Capítulo 5.12</h1>
+    <div class="app-shell">
+      <header class="titlebar">
+        <h1>Controlador de caché MSI</h1>
+        <p>Dos procesadores, cachés privadas de cuatro líneas y memoria principal</p>
+        <button
+          id="toggle-memory"
+          class="memory-toggle"
+          type="button"
+          aria-expanded="true"
+          aria-controls="memory-panel"
+        >
+          Ocultar memoria
+        </button>
+      </header>
+
+      <main class="layout">
+        <section class="cpu-panel panel" aria-labelledby="cpu1-title">
+          <h2 id="cpu1-title">CPU 1</h2>
+          <form class="request-form" data-cpu="0">
+            
+            <table class="no-bordered-table">
+              <tr>
+                <td>
+                  <label>
+                  Selecciona la dirección del bloque de memoria:
+                  <select name="block" required></select>
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    Word Offset:
+                    <select name="word" required>
+                      <option value="0">00</option>
+                      <option value="1">01</option>
+                      <option value="2">10</option>
+                      <option value="3">11</option>
+                    </select>
+                  </label>
+                </td>
+                <td>
+                  <label>
+                  Operación
+                    <select name="operation">
+                      <option value="read">Leer</option>
+                      <option value="write">Escribir</option>
+                    </select>
+                  </label>
+                </td>
+              </tr>
+            </table>
+            
+            <label class="write-value" hidden>
+              Valor a escribir
+              <input name="value" type="number" min="0" step="1" value="0" />
+            </label>
+            <button type="submit">Ejecutar paso</button>
+          </form>
+        </section>
+
+        <section class="cache-panel panel" aria-labelledby="cache1-title">
+          <h2 id="cache1-title">Caché 1</h2>
+          <div class="table-wrap">
+            <table id="cache1-table">
+              <thead>
+                <tr>
+                  <th rowspan="2">Index</th>
+                  <th rowspan="2">Valid</th>
+                  <th rowspan="2">Dirty</th>
+                  <th rowspan="2">Tag</th>
+                  <th colspan="4">Data</th>
+                  <th rowspan="2">MSI State</th>
+                </tr>
+                <tr>
+                  <th>Word 0</th><th>Word 1</th><th>Word 2</th><th>Word 3</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="fsm-panel">
+            <h3>FSM de la caché 1</h3>
+            <p class="fsm-current" id="cache1-fsm-current" aria-live="polite">Estado actual: Idle</p>
+            <svg class="fsm-diagram" viewBox="0 0 540 270" role="img" aria-labelledby="cache1-fsm-title cache1-fsm-description">
+              <title id="cache1-fsm-title">FSM de la caché 1</title>
+              <desc id="cache1-fsm-description">Idle pasa a Compare Tag al recibir una solicitud. Un acierto vuelve a Idle; un fallo clean pasa a Allocate y uno dirty pasa primero por Write Back.</desc>
+              <defs>
+                <marker id="fsm-arrow-1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                  <path d="M0,0 L8,4 L0,8 Z" />
+                </marker>
+              </defs>
+              <g class="fsm-transitions" marker-end="url(#fsm-arrow-1)">
+                <path d="M146 68 H324" />
+                <path d="M324 52 C274 8 196 8 146 52" />
+                <path d="M368 112 V164" />
+                <path d="M324 208 H146" />
+                <path d="M102 164 V112" />
+                <path d="M333 98 L137 178" />
+              </g>
+              <g class="fsm-labels">
+                <text x="235" y="58">solicitud</text>
+                <text x="235" y="15">hit</text>
+                <text x="395" y="142">miss dirty</text>
+                <text x="235" y="198">fin</text>
+                <text x="115" y="142">listo</text>
+                <text x="235" y="125">miss clean</text>
+              </g>
+              <g class="fsm-state" data-state="Idle">
+                <circle cx="102" cy="68" r="44" />
+                <text x="102" y="73">Idle</text>
+              </g>
+              <g class="fsm-state" data-state="Compare Tag">
+                <circle cx="368" cy="68" r="44" />
+                <text x="368" y="73">Compare Tag</text>
+              </g>
+              <g class="fsm-state" data-state="Write Back">
+                <circle cx="368" cy="208" r="44" />
+                <text x="368" y="213">Write Back</text>
+              </g>
+              <g class="fsm-state" data-state="Allocate">
+                <circle cx="102" cy="208" r="44" />
+                <text x="102" y="213">Allocate</text>
+              </g>
+            </svg>
+          </div>
+        </section>
+
+        <section class="cpu-panel panel" aria-labelledby="cpu2-title">
+          <h2 id="cpu2-title">CPU 2</h2>
+          <form class="request-form" data-cpu="1">
+            <table class="no-bordered-table">
+              <tr>
+                <td>
+                  <label>
+                  Selecciona la dirección del bloque de memoria:
+                  <select name="block" required></select>
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    Word Offset:
+                    <select name="word" required>
+                      <option value="0">00</option>
+                      <option value="1">01</option>
+                      <option value="2">10</option>
+                      <option value="3">11</option>
+                    </select>
+                  </label>
+                </td>
+                <td>
+                  <label>
+                  Operación
+                    <select name="operation">
+                      <option value="read">Leer</option>
+                      <option value="write">Escribir</option>
+                    </select>
+                  </label>
+                </td>
+              </tr>
+            </table>
+            <label class="write-value" hidden>
+              Valor a escribir
+              <input name="value" type="number" min="0" step="1" value="0" />
+            </label>
+            <button type="submit">Ejecutar paso</button>
+          </form>
+        </section>
+
+        <section class="cache-panel panel" aria-labelledby="cache2-title">
+          <h2 id="cache2-title">Caché 2</h2>
+          <div class="table-wrap">
+            <table id="cache2-table">
+              <thead>
+                <tr>
+                  <th rowspan="2">Index</th>
+                  <th rowspan="2">Valid</th>
+                  <th rowspan="2">Dirty</th>
+                  <th rowspan="2">Tag</th>
+                  <th colspan="4">Data</th>
+                  <th rowspan="2">MSI State</th>
+                </tr>
+                <tr>
+                  <th>Word 0</th><th>Word 1</th><th>Word 2</th><th>Word 3</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="fsm-panel">
+            <h3>FSM de la caché 2</h3>
+            <p class="fsm-current" id="cache2-fsm-current" aria-live="polite">Estado actual: Idle</p>
+            <svg class="fsm-diagram" viewBox="0 0 540 270" role="img" aria-labelledby="cache2-fsm-title cache2-fsm-description">
+              <title id="cache2-fsm-title">FSM de la caché 2</title>
+              <desc id="cache2-fsm-description">Idle pasa a Compare Tag al recibir una solicitud. Un acierto vuelve a Idle; un fallo clean pasa a Allocate y uno dirty pasa primero por Write Back.</desc>
+              <defs>
+                <marker id="fsm-arrow-2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                  <path d="M0,0 L8,4 L0,8 Z" />
+                </marker>
+              </defs>
+              <g class="fsm-transitions" marker-end="url(#fsm-arrow-2)">
+                <path d="M146 68 H324" />
+                <path d="M324 52 C274 8 196 8 146 52" />
+                <path d="M368 112 V164" />
+                <path d="M324 208 H146" />
+                <path d="M102 164 V112" />
+                <path d="M333 98 L137 178" />
+              </g>
+              <g class="fsm-labels">
+                <text x="235" y="58">solicitud</text>
+                <text x="235" y="15">hit</text>
+                <text x="395" y="142">miss dirty</text>
+                <text x="235" y="198">fin</text>
+                <text x="115" y="142">listo</text>
+                <text x="235" y="125">miss clean</text>
+              </g>
+              <g class="fsm-state" data-state="Idle">
+                <circle cx="102" cy="68" r="44" />
+                <text x="102" y="73">Idle</text>
+              </g>
+              <g class="fsm-state" data-state="Compare Tag">
+                <circle cx="368" cy="68" r="44" />
+                <text x="368" y="73">Compare Tag</text>
+              </g>
+              <g class="fsm-state" data-state="Write Back">
+                <circle cx="368" cy="208" r="44" />
+                <text x="368" y="213">Write Back</text>
+              </g>
+              <g class="fsm-state" data-state="Allocate">
+                <circle cx="102" cy="208" r="44" />
+                <text x="102" y="213">Allocate</text>
+              </g>
+            </svg>
+          </div>
+        </section>
+
+        <section id="memory-panel" class="memory-panel panel" aria-labelledby="memory-title">
+          <h2 id="memory-title">Memoria principal</h2>
+            <p class="address-note">
+              La dirección se forma con tag + índice del bloque + offset de word;
+              los dos bits de byte offset siempre son <code>00</code>.
+            </p>
+            <div class="table-wrap">
+              <table id="memory-table">
+                <thead>
+                  <tr>
+                    <th>Bloque (tag + índice)</th>
+                    <th>Word 0<br /><code>00</code></th>
+                    <th>Word 1<br /><code>01</code></th>
+                    <th>Word 2<br /><code>10</code></th>
+                    <th>Word 3<br /><code>11</code></th>
+                  </tr>
+                </thead>
+                <tbody>
+                <tr>
+                  <td><span class="tag">0000 0000 0000 0000 00</span><span class="block-index">00 0000 0000</span></td>
+                  <td>352</td><td>414</td><td>575</td><td>646</td>
+                </tr>
+                <tr>
+                  <td><span class="tag">0000 0000 0000 0000 00</span><span class="block-index">00 0000 0001</span></td>
+                  <td>27</td><td>818</td><td>939</td><td>100</td>
+                </tr>
+                <tr>
+                  <td><span class="tag">0000 0000 0000 0000 00</span><span class="block-index">00 0000 0010</span></td>
+                  <td>151</td><td>192</td><td>183</td><td>174</td>
+                </tr>
+                <tr>
+                  <td><span class="tag">0000 0000 0000 0000 00</span><span class="block-index">00 0000 0011</span></td>
+                  <td>145</td><td>166</td><td>117</td><td>188</td>
+                </tr>
+                <tr>
+                  <td><span class="tag">1111 1111 1111 1111 11</span><span class="block-index">00 0000 0000</span></td>
+                  <td>139</td><td>210</td><td>241</td><td>13</td>
+                </tr>
+                <tr>
+                  <td><span class="tag">1111 1111 1111 1111 11</span><span class="block-index">00 0000 0001</span></td>
+                  <td>232</td><td>44</td><td>255</td><td>66</td>
+                </tr>
+                <tr>
+                  <td><span class="tag">1111 1111 1111 1111 11</span><span class="block-index">00 0000 0010</span></td>
+                  <td>932</td><td>644</td><td>755</td><td>366</td>
+                </tr>
+                <tr>
+                  <td><span class="tag">1111 1111 1111 1111 11</span><span class="block-index">00 0000 0011</span></td>
+                  <td>252</td><td>44</td><td>155</td><td>66</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+        </section>
+
+        <section class="status-panel panel" aria-labelledby="status-title">
+          <h2 id="status-title">Pasos ejecutados</h2>
+          <ol id="step-history" aria-live="polite"></ol>
+        </section>
+      </main>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
