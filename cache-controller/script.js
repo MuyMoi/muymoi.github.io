@@ -301,7 +301,7 @@ memoryToggle.addEventListener("click", () => {
 });
 
 verilogToggle.addEventListener("click", () => {
-  const isExpanded = verilogToggle.nextElementSibling.hidden == true;
+  const isExpanded = verilogToggle.nextElementSibling.hidden != true;
   if (isExpanded) verilogToggle.textContent = "Mostrar código";
   else verilogToggle.textContent = "Ocultar código";
   verilogToggle.nextElementSibling.hidden = !isExpanded;
