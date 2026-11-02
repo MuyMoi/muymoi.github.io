@@ -14,19 +14,19 @@
 }
 
 body {
-  padding: 10px;
   background: linear-gradient(90deg, #0a2d69, #338da9, #0a2d69);
   color: var(--ink);
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .app-shell {
-  width: min(1500px, 96vw);
+  width: 100%;
 }
 
 .expo {
   color: white;
   margin: 20px;
+  font-size: 1.2rem;
 }
 
 .expo h1, .expo h2, .expo h3 {
@@ -255,6 +255,10 @@ code {
   font: inherit;
 }
 
+.request-form input[type="number"] {
+  width: 50pt;
+}
+
 button {
   min-height: 40px;
   background: darkgreen;
@@ -288,6 +292,8 @@ button:hover {
   font-weight: 700;
 }
 
+
+
 .state-M {
   color: var(--danger);
 }
@@ -305,31 +311,32 @@ button:hover {
 }
 
 .cache-panel[aria-labelledby="cache1-title"] {
-  grid-row: 2;
+  grid-row: 3;
 }
 
 .cache-panel[aria-labelledby="cache2-title"] {
-  grid-row: 2;
+  grid-row: 3;
 }
 
 .memory-panel {
-  grid-column: 3/3;
-  grid-row: 2 / 3;
+  grid-row: 3;
 }
 
 .status-panel {
-  min-height: 200px;
-  max-height: 37vh;
+  font-size: 12pt;
+  position: sticky;
+  grid-column: 1/-1;
+  right: 0;
+  top: -3rem;
+  height: 8rem;
+  background-color: #0a2d69ad;
   overflow-y: scroll;
+  color: white;
+  border: 2px solid greenyellow;
 }
 
 .layout.without-memory {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) 0.5fr;
-}
-
-.status-panel.without-memory {
-  grid-row: 2;
-  max-height: 90vh;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .memory-toggle {
@@ -348,9 +355,6 @@ button:hover {
   background: #2b2b2b;
 }
 
-.status-panel {
-}
-
 #step-history {
   margin: 0;
   padding-left: 24px;
@@ -367,6 +371,7 @@ p.center {
 @media (max-width: 900px) {
   .grid-subsection {
     display: block;
+  }
 
   .with-border-right {
     border-right: none;
@@ -386,6 +391,20 @@ p.center {
   }
 
   .panel {
-    padding: 10px;
+    margin-bottom: 5px;
+  }
+
+  .status-panel {
+    right: 0;
+    top: -2.3rem;
+    height: 120px;
+  }
+
+  .panel h2 {
+    font-size: 1rem;
+  }
+
+  table th, table td {
+    font-size: 8pt;
   }
 }

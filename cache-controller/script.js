@@ -9,7 +9,7 @@ const verilogToggle = document.querySelector("#verilog-toggle");
 const memoryBlocks = new Map();
 const writtenBackWords = new Set();
 const caches = [Array(4).fill(null), Array(4).fill(null)];
-const FSM_STEP_DELAY = 700;
+const FSM_STEP_DELAY = 1500;
 let requestInProgress = false;
 const cacheTables = [
   document.querySelector("#cache1-table tbody"),

@@ -760,6 +760,11 @@ endmodule
       </header>
 
       <main class="layout">
+        <section class="status-panel panel" aria-labelledby="status-title">
+          <h2 id="status-title">Pasos ejecutados</h2>
+          <ol id="step-history" aria-live="polite"></ol>
+        </section>
+        
         <section class="cpu-panel panel" aria-labelledby="cpu1-title">
           <h2 id="cpu1-title">CPU 1</h2>
           <form class="request-form" data-cpu="0">
@@ -768,7 +773,7 @@ endmodule
               <tr>
                 <td>
                   <label>
-                  Selecciona la dirección del bloque de memoria:
+                  Dirección del bloque de memoria:
                   <select name="block" required></select>
                   </label>
                 </td>
@@ -792,13 +797,15 @@ endmodule
                     </select>
                   </label>
                 </td>
+              
+                <td>
+                  <label class="write-value" hidden>
+                    Valor a<br> escribir
+                    <input name="value" type="number" min="0" step="1" value="0" />
+                  </label>
+                </td>
               </tr>
             </table>
-            
-            <label class="write-value" hidden>
-              Valor a escribir
-              <input name="value" type="number" min="0" step="1" value="0" />
-            </label>
             <button type="submit">Ejecutar paso</button>
           </form>
         </section>
@@ -877,7 +884,7 @@ endmodule
               <tr>
                 <td>
                   <label>
-                  Selecciona la dirección del bloque de memoria:
+                  Dirección del bloque de memoria:
                   <select name="block" required></select>
                   </label>
                 </td>
@@ -901,12 +908,15 @@ endmodule
                     </select>
                   </label>
                 </td>
+              
+                <td>
+                  <label class="write-value" hidden>
+                    Valor a<br> escribir
+                    <input name="value" type="number" min="0" step="1" value="0" />
+                  </label>
+                </td>
               </tr>
             </table>
-            <label class="write-value" hidden>
-              Valor a escribir
-              <input name="value" type="number" min="0" step="1" value="0" />
-            </label>
             <button type="submit">Ejecutar paso</button>
           </form>
         </section>
@@ -1034,10 +1044,7 @@ endmodule
             </div>
         </section>
 
-        <section class="status-panel panel" aria-labelledby="status-title">
-          <h2 id="status-title">Pasos ejecutados</h2>
-          <ol id="step-history" aria-live="polite"></ol>
-        </section>
+        
       </main>
     </div>
     <script src="script.js"></script>
